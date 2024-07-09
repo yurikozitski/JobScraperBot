@@ -6,7 +6,10 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 using var cts = new CancellationTokenSource();
 var bot = new TelegramBotClient("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", cancellationToken: cts.Token);
-bot.StartReceiving(HandleUpdate, async (bot, ex, ct) => Console.WriteLine(ex));
+bot.StartReceiving(HandleUpdate, async (bot, ex, ct) => 
+{ 
+    Console.WriteLine(ex);
+});
 
 var me = await bot.GetMeAsync();
 Console.WriteLine($"@{me.Username} is running... Press Enter to terminate");
@@ -21,9 +24,9 @@ async Task HandleUpdate(ITelegramBotClient bot, Update update, CancellationToken
 
     var chatId = update.Message.Chat.Id;
 
-    IUserStateMachine? currentUserState;
+    //IUserStateMachine? currentUserState;
 
-    if (!UserStateStorage.StateStorage.TryGetValue(chatId, out currentUserState))
+    if (!UserStateStorage.StateStorage.TryGetValue(chatId, out IUserStateMachine? currentUserState))
     {
         currentUserState = new UserStateMachine(new UserSettings());
         UserStateStorage.StateStorage.TryAdd(chatId, currentUserState);
@@ -33,10 +36,16 @@ async Task HandleUpdate(ITelegramBotClient bot, Update update, CancellationToken
 
     UserStateStorage.StateStorage[chatId].MoveNext();
 
-    string responseMessage = ResponseMessageService.GetResponseMessage(currentUserState.State, 
+    string responseMessage = ResponseMessageService.GetResponseMessage(UserStateStorage.StateStorage[chatId].State, 
         UserStateStorage.StateStorage[chatId].UserSettings);
-    var responseButtons = ResponseKeyboardService.GetResponseButtons(currentUserState.State);
+    var responseButtons = ResponseKeyboardService.GetResponseButtons(UserStateStorage.StateStorage[chatId].State);
 
     await bot.SendTextMessageAsync(chatId, responseMessage,
         replyMarkup: responseButtons != null ? new ReplyKeyboardMarkup(responseButtons) { ResizeKeyboard = true } : new ReplyKeyboardRemove());
+
+    if (UserStateStorage.StateStorage[chatId].State == UserState.OnEnd)
+    {
+        var vacancies = await VacancyService.GetVacanciesAsync(bot, chatId, UserStateStorage.StateStorage[chatId].UserSettings);
+        await VacancyService.ShowVacanciesAsync(bot, chatId, vacancies);
+    }
 }
