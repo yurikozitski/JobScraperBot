@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 
-namespace JobScraperBot.Services
+namespace JobScraperBot.Services.Implementations
 {
-    internal static class ResponseMessageService
+    internal class ResponseMessageService : IResponseMessageService
     {
-        public static string GetResponseMessage(UserState state, UserSettings userSettings)
+        public string GetResponseMessage(UserState state, UserSettings userSettings)
         {
             return state switch
             {

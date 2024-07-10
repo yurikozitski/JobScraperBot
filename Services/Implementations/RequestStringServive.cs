@@ -1,17 +1,18 @@
-﻿using JobScraperBot.State;
-using System.Text;
+﻿using System.Text;
+using JobScraperBot.Services.Interfaces;
+using JobScraperBot.State;
 
-namespace JobScraperBot.Services
+namespace JobScraperBot.Services.Implementations
 {
-    internal static class RequestStringServive
+    internal class RequestStringServive : IRequestStringService
     {
-        private static string domain = "https://localhost:7055/jobs/find?";
+        private readonly string domain = "https://localhost:7055/jobs/find?";
 
-        public static string GetRequestString(UserSettings userSettings)
+        public string GetRequestString(UserSettings userSettings)
         {
             ArgumentNullException.ThrowIfNull(userSettings);
 
-            var requestSb = new StringBuilder(domain);
+            var requestSb = new StringBuilder(this.domain);
 
             _ = userSettings.Stack switch
             {
@@ -32,7 +33,6 @@ namespace JobScraperBot.Services
             };
 
             return requestSb.ToString();
-
         }
     }
 }

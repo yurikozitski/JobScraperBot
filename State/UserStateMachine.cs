@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace JobScraperBot.State
+﻿namespace JobScraperBot.State
 {
     internal class UserStateMachine : IUserStateMachine
     {
@@ -19,9 +13,9 @@ namespace JobScraperBot.State
 
         public bool MoveNext()
         {
-            if (State == UserState.OnEnd)
+            if (this.State == UserState.OnEnd)
                 return false;
-            State++;
+            this.State++;
             return true;
         }
     }

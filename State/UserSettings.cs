@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace JobScraperBot.State
+﻿namespace JobScraperBot.State
 {
     internal class UserSettings
     {
@@ -13,6 +7,6 @@ namespace JobScraperBot.State
         public string Grade { get; set; } = default!;
 
         public override string ToString() =>
-            $"{Stack}, {Grade}";
+            $"{this.Stack}, {this.Grade}";
     }
 }
