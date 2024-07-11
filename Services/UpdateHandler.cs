@@ -15,6 +15,7 @@ namespace JobScraperBot.Services
         private readonly IResponseKeyboardService responseKeyboardService;
         private readonly IVacancyService vacancyService;
         private readonly IMessageValidator messageValidator;
+        private readonly IMenuHandler menuHandler;
 
         public UpdateHandler(
             IUserStateStorage userStateStorage,
@@ -22,7 +23,8 @@ namespace JobScraperBot.Services
             IResponseMessageService responseMessageService,
             IResponseKeyboardService responseKeyboardService,
             IVacancyService vacancyService,
-            IMessageValidator messageValidator)
+            IMessageValidator messageValidator,
+            IMenuHandler menuHandler)
         {
             this.userStateStorage = userStateStorage;
             this.userStateService = userStateService;
@@ -30,6 +32,7 @@ namespace JobScraperBot.Services
             this.responseKeyboardService = responseKeyboardService;
             this.vacancyService = vacancyService;
             this.messageValidator = messageValidator;
+            this.menuHandler = menuHandler;
         }
 
         public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, HandleErrorSource source, CancellationToken cancellationToken)
@@ -58,6 +61,8 @@ namespace JobScraperBot.Services
             }
 
             this.userStateService.UpdateUserSettings(chatId, update);
+
+            await this.menuHandler.HandleMenuAsync(botClient, update.Message, currentUserState);
 
             currentUserState.MoveNext();
 

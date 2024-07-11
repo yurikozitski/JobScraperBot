@@ -6,6 +6,7 @@
         OnGreeting,
         OnStackChoosing,
         OnGradeChoosing,
+        OnTypeChoosing,
         OnEnd,
     }
 }

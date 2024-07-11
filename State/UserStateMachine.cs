@@ -18,5 +18,13 @@
             this.State++;
             return true;
         }
+
+        public void Reset()
+        {
+            this.State = UserState.OnStart;
+            this.UserSettings.Reset();
+        }
+
+        public void SetState(UserState state) => this.State = state;
     }
 }

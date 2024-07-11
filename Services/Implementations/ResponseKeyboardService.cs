@@ -33,6 +33,12 @@ namespace JobScraperBot.Services.Implementations
                     new KeyboardButton[] { this.optionsProvider.Levels[Grades.TeamLead] },
                     new KeyboardButton[] { this.optionsProvider.Levels[Grades.HeadChief] },
                 },
+                UserState.OnTypeChoosing => new KeyboardButton[][]
+                {
+                    new KeyboardButton[] { this.optionsProvider.JobKinds[JobTypes.Remote] },
+                    new KeyboardButton[] { this.optionsProvider.JobKinds[JobTypes.OnSite] },
+                    new KeyboardButton[] { this.optionsProvider.JobKinds[JobTypes.OnSite | JobTypes.Remote] },
+                },
                 UserState.OnEnd => null,
                 _ => null
             };

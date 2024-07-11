@@ -12,6 +12,7 @@ namespace JobScraperBot.Services.Implementations
                 UserState.OnGreeting => "Вас вітає бот і т.д",
                 UserState.OnStackChoosing => "Виберіть стек",
                 UserState.OnGradeChoosing => "Виберіть рівень",
+                UserState.OnTypeChoosing => "Виберіть вид роботи",
                 UserState.OnEnd => $"Налаштування завершено, ваша підписка: {userSettings}",
                 _ => "щось пішло не так..."
             };

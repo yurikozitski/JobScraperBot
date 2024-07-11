@@ -18,6 +18,10 @@ namespace JobScraperBot.Services.Implementations
             if (message == null || message.Text == null)
                 return false;
 
+            if (message.Text == "/reset" ||
+                message.Text == "/confirm")
+                return true;
+
             return userState switch
             {
                 UserState.OnStackChoosing => this.optionsProvider.Stacks.ContainsValue(message.Text),

@@ -7,5 +7,7 @@ namespace JobScraperBot.Services.Interfaces
         Dictionary<JobStacks, string> Stacks { get; }
 
         Dictionary<Grades, string> Levels { get; }
+
+        Dictionary<JobTypes, string> JobKinds { get; }
     }
 }

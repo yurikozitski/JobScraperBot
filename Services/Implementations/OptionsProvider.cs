@@ -20,5 +20,12 @@ namespace JobScraperBot.Services.Implementations
             { Grades.TeamLead, "Team Lead" },
             { Grades.HeadChief, "Head/Chief" },
         };
+
+        public Dictionary<JobTypes, string> JobKinds => new Dictionary<JobTypes, string>()
+        {
+            { JobTypes.OnSite, "В офісі" },
+            { JobTypes.Remote, "Віддалено" },
+            { JobTypes.Remote | JobTypes.OnSite, "Віддалено або в офісі" },
+        };
     }
 }

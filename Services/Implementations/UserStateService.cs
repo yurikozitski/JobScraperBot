@@ -15,7 +15,9 @@ namespace JobScraperBot.Services.Implementations
 
         public void UpdateUserSettings(long chatId, Update update)
         {
-            if (!this.storage.StateStorage.TryGetValue(chatId, out _))
+            if (!this.storage.StateStorage.TryGetValue(chatId, out _) ||
+                update?.Message?.Text == "/reset" ||
+                update?.Message?.Text == "/confirm")
             {
                 return;
             }
@@ -30,6 +32,11 @@ namespace JobScraperBot.Services.Implementations
             if (currentUserState == UserState.OnGradeChoosing)
             {
                 this.storage.StateStorage[chatId].UserSettings.Grade = update.Message!.Text!;
+            }
+
+            if (currentUserState == UserState.OnTypeChoosing)
+            {
+                this.storage.StateStorage[chatId].UserSettings.Type = update.Message!.Text!;
             }
         }
     }
