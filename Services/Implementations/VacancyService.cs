@@ -1,8 +1,11 @@
-﻿using System.Text.Json;
+﻿using System.IO.Compression;
+using System.Text;
+using System.Text.Json;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 using JobsScraper.BLL.Models;
 using Telegram.Bot;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace JobScraperBot.Services.Implementations
 {
@@ -23,21 +26,24 @@ namespace JobScraperBot.Services.Implementations
 
             string response;
 
-            try
-            {
-                response = await this.httpClientFactory.CreateClient().GetStringAsync(requestString);
-            }
-            catch (HttpRequestException)
-            {
-                Console.WriteLine("\nCan't load vacancies!");
-                await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
-                throw;
-            }
-            catch (Exception)
-            {
-                await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
-                throw;
-            }
+            //try
+            //{
+            //    response = await this.httpClientFactory.CreateClient().GetStringAsync(requestString);
+            //}
+            //catch (HttpRequestException)
+            //{
+            //    Console.WriteLine("\nCan't load vacancies!");
+            //    await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
+            //    throw;
+            //}
+            //catch (Exception)
+            //{
+            //    await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
+            //    throw;
+            //}
+
+            using StreamReader r = new StreamReader("testData.json");
+            response = r.ReadToEnd();
 
             var options = new JsonSerializerOptions
             {
@@ -70,8 +76,29 @@ namespace JobScraperBot.Services.Implementations
                     $"Опис: {vacancy.Description ?? "не вказано"}",
                     $"Дата: {vacancy.PublicationDate}");
 
-                await bot.SendTextMessageAsync(chatId, vacancyView);
+                try
+                {
+                    await bot.SendTextMessageAsync(chatId, vacancyView, replyMarkup: new InlineKeyboardMarkup(GetVacancyButton(vacancy.Link)));
+                    Console.WriteLine(vacancy.Link.Length);
+                }
+                catch
+                {
+                    Console.WriteLine($"Failed vacanncy link length: {vacancy.Link.Length}");
+                    //Console.WriteLine($"Failed vacanncy link length in base64: {Convert.ToBase64String(Zip(vacancy.Link)).Length}");
+                    continue;
+                }
             }
+        }
+
+        private static InlineKeyboardButton[][] GetVacancyButton(string vacancyLink)
+        {
+            return new InlineKeyboardButton[][]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Більше не показувати", vacancyLink),
+                },
+            };
         }
     }
 }
