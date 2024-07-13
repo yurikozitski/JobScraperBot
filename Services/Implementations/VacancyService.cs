@@ -5,6 +5,7 @@ using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 using JobsScraper.BLL.Models;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace JobScraperBot.Services.Implementations
@@ -76,16 +77,23 @@ namespace JobScraperBot.Services.Implementations
                     $"Опис: {vacancy.Description ?? "не вказано"}",
                     $"Дата: {vacancy.PublicationDate}");
 
+                string trimmedLink = GetTrimmedLink(vacancy.Link);
+
+                var hiddenVacanciesLinks = await GetHiddenVacanciesLinksAsync(chatId);
+
+                if (hiddenVacanciesLinks != null &&
+                    hiddenVacanciesLinks.Contains(trimmedLink))
+                {
+                    continue;
+                }
+
                 try
                 {
-                    await bot.SendTextMessageAsync(chatId, vacancyView, replyMarkup: new InlineKeyboardMarkup(GetVacancyButton(vacancy.Link)));
-                    Console.WriteLine(vacancy.Link.Length);
+                    await bot.SendTextMessageAsync(chatId, vacancyView, replyMarkup: new InlineKeyboardMarkup(GetVacancyButton(trimmedLink)));
                 }
                 catch
                 {
-                    Console.WriteLine($"Failed vacanncy link length: {vacancy.Link.Length}");
-                    //Console.WriteLine($"Failed vacanncy link length in base64: {Convert.ToBase64String(Zip(vacancy.Link)).Length}");
-                    continue;
+                    Console.WriteLine($"Can't show vacancy: {vacancy.Link}");
                 }
             }
         }
@@ -99,6 +107,27 @@ namespace JobScraperBot.Services.Implementations
                     InlineKeyboardButton.WithCallbackData("Більше не показувати", vacancyLink),
                 },
             };
+        }
+
+        private static string GetTrimmedLink(string link)
+        {
+            if (link.Length <= 64)
+                return link;
+
+            return link.Substring(link.Length - 64);
+        }
+
+        private static async Task<string[]?> GetHiddenVacanciesLinksAsync(long chatId)
+        {
+            string[]? fileArray = null;
+            string path = Directory.GetCurrentDirectory() + "\\HiddenVacancies" + $"\\{chatId}_hidden.txt";
+
+            if (System.IO.File.Exists(path))
+            {
+                fileArray = await System.IO.File.ReadAllLinesAsync(path);
+            }
+
+            return fileArray;
         }
     }
 }

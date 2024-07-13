@@ -15,6 +15,18 @@ namespace JobScraperBot.Services.Implementations
             if (message.Text == "/reset")
             {
                 currentUserState.Reset();
+
+                string subPath = Directory.GetCurrentDirectory() + "\\HiddenVacancies";
+
+                if (Directory.Exists(subPath))
+                {
+                    string path = subPath + $"\\{message.Chat.Id}_hidden.txt";
+
+                    if (System.IO.File.Exists(path))
+                    {
+                        System.IO.File.Delete(path);
+                    }
+                }
             }
 
             if (message.Text == "/confirm")

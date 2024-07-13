@@ -17,6 +17,7 @@ namespace JobScraperBot.Extensions
                     .AddSingleton<IMessageValidator, MessageValidator>()
                     .AddSingleton<IOptionsProvider, OptionsProvider>()
                     .AddSingleton<IMenuHandler, MenuHandler>()
+                    .AddSingleton<IVacancyVisibilityService, VacancyVisibilityService>()
                     .AddTransient<IRequestStringService, RequestStringServive>()
                     .AddTransient<IVacancyService, VacancyService>()
                     .AddTransient<IUpdateHandler, UpdateHandler>()
