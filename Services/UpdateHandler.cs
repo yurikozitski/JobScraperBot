@@ -47,7 +47,7 @@ namespace JobScraperBot.Services
         {
             if (update.CallbackQuery != null)
             {
-                await this.vacancyVisibilityService.HandleVacancyVisibilityAsync(update);
+                await this.vacancyVisibilityService.HandleVacancyVisibilityAsync(botClient, update);
             }
 
             if (update.Message == null || update.Message.Text == null) return;
