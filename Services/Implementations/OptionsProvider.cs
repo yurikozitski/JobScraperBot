@@ -27,5 +27,11 @@ namespace JobScraperBot.Services.Implementations
             { JobTypes.Remote, "Віддалено" },
             { JobTypes.Remote | JobTypes.OnSite, "Віддалено або в офісі" },
         };
+
+        public Dictionary<string, string> ResultTypes => new Dictionary<string, string>()
+        {
+            { "now", "Отримати зараз" },
+            { "with_subscription", "Налаштувати підписку" },
+        };
     }
 }

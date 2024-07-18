@@ -7,6 +7,8 @@
         OnStackChoosing,
         OnGradeChoosing,
         OnTypeChoosing,
+        OnResultChoosing,
+        OnSubscriptionSetting,
         OnEnd,
     }
 }

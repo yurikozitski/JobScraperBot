@@ -9,5 +9,7 @@ namespace JobScraperBot.Services.Interfaces
         Dictionary<Grades, string> Levels { get; }
 
         Dictionary<JobTypes, string> JobKinds { get; }
+
+        Dictionary<string, string> ResultTypes { get; }
     }
 }

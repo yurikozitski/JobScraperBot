@@ -18,6 +18,7 @@ namespace JobScraperBot.Extensions
                     .AddSingleton<IOptionsProvider, OptionsProvider>()
                     .AddSingleton<IMenuHandler, MenuHandler>()
                     .AddSingleton<IVacancyVisibilityService, VacancyVisibilityService>()
+                    .AddSingleton<IResultChoosingHandler, ResultChoosingHandler>()
                     .AddTransient<IRequestStringService, RequestStringServive>()
                     .AddTransient<IVacancyService, VacancyService>()
                     .AddTransient<IUpdateHandler, UpdateHandler>()
