@@ -16,11 +16,22 @@ namespace JobScraperBot.Services.Implementations
             {
                 currentUserState.Reset();
 
-                string subPath = Directory.GetCurrentDirectory() + "\\HiddenVacancies";
+                string subPathHidden = Directory.GetCurrentDirectory() + "\\HiddenVacancies";
+                string subPathSbcscr = Directory.GetCurrentDirectory() + "\\Subscriptions";
 
-                if (Directory.Exists(subPath))
+                if (Directory.Exists(subPathHidden))
                 {
-                    string path = subPath + $"\\{message.Chat.Id}_hidden.txt";
+                    string path = subPathHidden + $"\\{message.Chat.Id}_hidden.txt";
+
+                    if (System.IO.File.Exists(path))
+                    {
+                        System.IO.File.Delete(path);
+                    }
+                }
+
+                if (Directory.Exists(subPathSbcscr))
+                {
+                    string path = subPathSbcscr + $"\\{message.Chat.Id}_subscription.txt";
 
                     if (System.IO.File.Exists(path))
                     {
@@ -33,7 +44,7 @@ namespace JobScraperBot.Services.Implementations
             {
                 if (currentUserState.State > UserState.OnGradeChoosing)
                 {
-                    currentUserState.SetState(UserState.OnEnd);
+                    currentUserState.SetState(UserState.OnResultChoosing - 1);
                 }
                 else
                 {

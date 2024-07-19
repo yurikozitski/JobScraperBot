@@ -2,6 +2,7 @@
 using JobScraperBot.Services.Implementations;
 using JobScraperBot.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Telegram.Bot;
 using Telegram.Bot.Polling;
 
 namespace JobScraperBot.Extensions
@@ -19,9 +20,13 @@ namespace JobScraperBot.Extensions
                     .AddSingleton<IMenuHandler, MenuHandler>()
                     .AddSingleton<IVacancyVisibilityService, VacancyVisibilityService>()
                     .AddSingleton<IResultChoosingHandler, ResultChoosingHandler>()
+                    .AddSingleton<ISubscriptionWriter, SubscriptionWriter>()
+                    .AddSingleton<IUserSubscriptionsStorage, UserSubscriptionsStorage>()
+                    .AddSingleton<ISubscriptionsService, SubscriptionsService>()
                     .AddTransient<IRequestStringService, RequestStringServive>()
                     .AddTransient<IVacancyService, VacancyService>()
                     .AddTransient<IUpdateHandler, UpdateHandler>()
+                    //.AddTransient<ITelegramBotClient, TelegramBotClient>()
                     .AddHttpClient();
         }
     }
