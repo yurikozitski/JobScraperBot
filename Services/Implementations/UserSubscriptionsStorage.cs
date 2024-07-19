@@ -6,11 +6,11 @@ namespace JobScraperBot.Services.Implementations
 {
     internal class UserSubscriptionsStorage : IUserSubscriptionsStorage
     {
-        public ConcurrentBag<SubscriptionInfo> Subscriptions { get; }
+        public ConcurrentDictionary<long, SubscriptionInfo> Subscriptions { get; }
 
         public UserSubscriptionsStorage()
         {
-            this.Subscriptions = new ConcurrentBag<SubscriptionInfo>();
+            this.Subscriptions = new ConcurrentDictionary<long, SubscriptionInfo>();
         }
     }
 }

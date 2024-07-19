@@ -7,6 +7,13 @@ namespace JobScraperBot.Services.Implementations
 {
     internal class MenuHandler : IMenuHandler
     {
+        private readonly IUserSubscriptionsStorage subscriptionsStorage;
+
+        public MenuHandler(IUserSubscriptionsStorage userSubscriptionsStorage)
+        {
+            this.subscriptionsStorage = userSubscriptionsStorage;
+        }
+
         public async Task HandleMenuAsync(ITelegramBotClient botClient, Message message, IUserStateMachine currentUserState)
         {
             ArgumentNullException.ThrowIfNull(message);
@@ -15,6 +22,8 @@ namespace JobScraperBot.Services.Implementations
             if (message.Text == "/reset")
             {
                 currentUserState.Reset();
+
+                this.subscriptionsStorage.Subscriptions.Remove(message.Chat.Id, out _);
 
                 string subPathHidden = Directory.GetCurrentDirectory() + "\\HiddenVacancies";
                 string subPathSbcscr = Directory.GetCurrentDirectory() + "\\Subscriptions";

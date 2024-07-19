@@ -5,6 +5,6 @@ namespace JobScraperBot.Services.Interfaces
 {
     internal interface IUserSubscriptionsStorage
     {
-        ConcurrentBag<SubscriptionInfo> Subscriptions { get; }
+        ConcurrentDictionary<long, SubscriptionInfo> Subscriptions { get; }
     }
 }

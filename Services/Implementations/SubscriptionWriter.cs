@@ -1,4 +1,5 @@
-﻿using JobScraperBot.Services.Interfaces;
+﻿using System.Globalization;
+using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 
 namespace JobScraperBot.Services.Implementations
@@ -18,7 +19,15 @@ namespace JobScraperBot.Services.Implementations
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
-            await System.IO.File.WriteAllTextAsync(path + $"{chatId}_subscription.txt", sbscrptnText + "," + userState.UserSettings);
+            string[] sbscrptnTextArr = sbscrptnText.Split(',');
+
+            TimeOnly time = TimeOnly.Parse(sbscrptnTextArr[1].Trim(), CultureInfo.InvariantCulture);
+            var timeDifference = (DateTime.UtcNow - DateTime.Now).Hours;
+            TimeOnly timeUtc = time.AddHours(timeDifference);
+
+            string sbscrptnTextUtc = sbscrptnTextArr[0].Trim() + "," + timeUtc.ToString("HH':'mm");
+
+            await System.IO.File.WriteAllTextAsync(path + $"{chatId}_subscription.txt", sbscrptnTextUtc + "," + userState.UserSettings);
         }
     }
 }
