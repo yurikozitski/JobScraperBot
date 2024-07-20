@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using JobScraperBot.Models;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 
@@ -25,11 +26,22 @@ namespace JobScraperBot.Services.Implementations
             var timeDifference = (DateTime.UtcNow - DateTime.Now).Hours;
             TimeOnly timeUtc = time.AddHours(timeDifference);
 
-            string sbscrptnTextUtc = sbscrptnTextArr[0].Trim() + "," + timeUtc.ToString("HH':'mm");
+            string interval = sbscrptnTextArr[0].Trim();
+            string sbscrptnTextUtc = interval + "," + timeUtc.ToString("HH':'mm");
+
+            int dayIncrement = interval switch
+            {
+                _ when interval.Equals("щодня", StringComparison.InvariantCulture) => 1,
+                _ when interval.Equals("через день", StringComparison.InvariantCulture) => 2,
+                _ when interval.Equals("щотижня", StringComparison.InvariantCulture) => 7,
+                _ => throw new FormatException($"Can't convert string: {interval}")
+            };
+
+            var messagingDateOnly = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(dayIncrement));
 
             await System.IO.File.WriteAllTextAsync(
                 path + $"{chatId}_subscription.txt",
-                sbscrptnTextUtc + "," + userState.UserSettings + "," + DateTime.UtcNow.ToString(CultureInfo.InvariantCulture));
+                sbscrptnTextUtc + "," + userState.UserSettings + "," + messagingDateOnly.ToString(CultureInfo.InvariantCulture));
         }
     }
 }

@@ -12,7 +12,7 @@ namespace JobScraperBot.Models
 
         public TimeOnly Time { get; }
 
-        public DateTime LastSent { get; set; }
+        public DateTime NextUpdate { get; set; }
 
         public SubscriptionInfo(long chatId, UserSettings userSettings, MessageInterval messageInterval, TimeOnly time)
         {

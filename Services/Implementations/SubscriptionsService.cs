@@ -53,51 +53,11 @@ namespace JobScraperBot.Services.Implementations
                     {
                         try
                         {
-                            //foreach (var subscriptionInfo in this.subscriptionsStorage.Subscriptions.Values)
-                            //{
-                            //    if (subscriptionInfo.MessageInterval == MessageInterval.Daily &&
-                            //    ((subscriptionInfo.LastSent == null && TimeOnly.FromDateTime(DateTime.UtcNow) > subscriptionInfo.Time) ||
-                            //    (subscriptionInfo.LastSent != null && DateTime.UtcNow.Subtract((DateTime)subscriptionInfo.LastSent) > new TimeSpan(1, 0, 0, 0))))
-                            //    {
-                            //        await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
-                            //    }
-
-                            //    if (subscriptionInfo.MessageInterval == MessageInterval.OnceInTwoDays &&
-                            //    ((subscriptionInfo.LastSent == null && TimeOnly.FromDateTime(DateTime.UtcNow) > subscriptionInfo.Time) ||
-                            //    (subscriptionInfo.LastSent != null && DateTime.UtcNow.Subtract((DateTime)subscriptionInfo.LastSent) > new TimeSpan(2, 0, 0, 0))))
-                            //    {
-                            //        await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
-                            //    }
-
-                            //    if (subscriptionInfo.MessageInterval == MessageInterval.Weekly &&
-                            //    ((subscriptionInfo.LastSent == null && TimeOnly.FromDateTime(DateTime.UtcNow) > subscriptionInfo.Time) ||
-                            //    (subscriptionInfo.LastSent != null && DateTime.UtcNow.Subtract((DateTime)subscriptionInfo.LastSent) > new TimeSpan(7, 0, 0, 0))))
-                            //    {
-                            //        await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
-                            //    }
-                            //}
                             foreach (var subscriptionInfo in this.subscriptionsStorage.Subscriptions.Values)
                             {
-                                if (subscriptionInfo.LastSent.Day != DateTime.UtcNow.Day &&
-                                TimeOnly.FromDateTime(DateTime.UtcNow) > subscriptionInfo.Time)
+                                if (DateTime.UtcNow > subscriptionInfo.NextUpdate)
                                 {
-                                    if (subscriptionInfo.MessageInterval == MessageInterval.Daily &&
-                                    subscriptionInfo.LastSent.AddDays(1).Day == DateTime.UtcNow.Day)
-                                    {
-                                        await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
-                                    }
-
-                                    if (subscriptionInfo.MessageInterval == MessageInterval.OnceInTwoDays &&
-                                    subscriptionInfo.LastSent.AddDays(2).Day == DateTime.UtcNow.Day)
-                                    {
-                                        await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
-                                    }
-
-                                    if (subscriptionInfo.MessageInterval == MessageInterval.Weekly &&
-                                    subscriptionInfo.LastSent.AddDays(7).Day == DateTime.UtcNow.Day)
-                                    {
-                                        await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
-                                    }
+                                    await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
                                 }
                             }
                         }
@@ -145,7 +105,7 @@ namespace JobScraperBot.Services.Implementations
 
                         var subscriptionInfo = new SubscriptionInfo(chatId, userSettings, messageInterval, time)
                         {
-                            LastSent = DateTime.Parse(subscriptionParams[5].Trim(), CultureInfo.InvariantCulture),
+                            NextUpdate = new DateTime(DateOnly.Parse(subscriptionParams[5].Trim(), CultureInfo.InvariantCulture), time, DateTimeKind.Utc),
                         };
 
                         if (!this.subscriptionsStorage.Subscriptions.ContainsKey(chatId))
@@ -178,16 +138,23 @@ namespace JobScraperBot.Services.Implementations
                 subscriptionInfo.ChatId,
                 vacancies);
 
-            await UpdateLastSentDate(subscriptionInfo.ChatId);
+            await UpdateLastSentDate(subscriptionInfo);
         }
 
 #pragma warning disable SA1204 // Static elements should appear before instance elements
-        private static async Task UpdateLastSentDate(long chatId)
+        private static async Task UpdateLastSentDate(SubscriptionInfo subscriptionInfo)
         {
-            string path = Directory.GetCurrentDirectory() + "\\Subscriptions" + $"\\{chatId}_subscription.txt";
+            string path = Directory.GetCurrentDirectory() + "\\Subscriptions" + $"\\{subscriptionInfo.ChatId}_subscription.txt";
             string subscription = await File.ReadAllTextAsync(path);
             string[] subscriptionParams = subscription.Split(',');
-            subscriptionParams[subscriptionParams.Length - 1] = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+            int dayIncrement = subscriptionInfo.MessageInterval switch
+            {
+                MessageInterval.Daily => 1,
+                MessageInterval.OnceInTwoDays => 2,
+                MessageInterval.Weekly => 7,
+                _ => throw new ArgumentOutOfRangeException(nameof(subscriptionInfo), $"{subscriptionInfo.MessageInterval} is not valid"),
+            };
+            subscriptionParams[subscriptionParams.Length - 1] = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(dayIncrement)).ToString(CultureInfo.InvariantCulture);
             string newSubscription = string.Join(",", subscriptionParams);
 
             await File.WriteAllTextAsync(path, newSubscription);
