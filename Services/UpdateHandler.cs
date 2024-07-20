@@ -78,9 +78,9 @@ namespace JobScraperBot.Services
 
             await this.menuHandler.HandleMenuAsync(botClient, update.Message, currentUserState);
 
-            this.resultChoosingHandler.HandleResult(update.Message.Text, currentUserState);
-
             await this.subscriptionWriter.WriteSubscriptionAsync(chatId, update.Message.Text, currentUserState);
+
+            this.resultChoosingHandler.HandleResult(update.Message.Text, currentUserState);
 
             currentUserState.MoveNext();
 

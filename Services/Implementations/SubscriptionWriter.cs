@@ -27,7 +27,9 @@ namespace JobScraperBot.Services.Implementations
 
             string sbscrptnTextUtc = sbscrptnTextArr[0].Trim() + "," + timeUtc.ToString("HH':'mm");
 
-            await System.IO.File.WriteAllTextAsync(path + $"{chatId}_subscription.txt", sbscrptnTextUtc + "," + userState.UserSettings);
+            await System.IO.File.WriteAllTextAsync(
+                path + $"{chatId}_subscription.txt",
+                sbscrptnTextUtc + "," + userState.UserSettings + "," + DateTime.UtcNow.ToString(CultureInfo.InvariantCulture));
         }
     }
 }

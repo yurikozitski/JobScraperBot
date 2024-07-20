@@ -32,14 +32,14 @@ namespace JobScraperBot.Services.Implementations
                 _ => throw new ArgumentException($"Invalid value: {userSettings.Grade} for grade name"),
             };
 
-            if (userSettings.Type != null)
+            if (!string.IsNullOrEmpty(userSettings.Type))
             {
                 _ = userSettings.Type switch
                 {
                     _ when userSettings.Type.Equals("В офісі", StringComparison.InvariantCulture) => requestSb.Append("&JobType=OnSite"),
                     _ when userSettings.Type.Equals("Віддалено", StringComparison.InvariantCulture) => requestSb.Append("&JobType=Remote"),
                     _ when userSettings.Type.Equals("Віддалено або в офісі", StringComparison.InvariantCulture) => requestSb.Append("&JobType=Remote&JobType=OnSite"),
-                    _ => throw new ArgumentException($"Invalid value: {userSettings.Stack} for job type name"),
+                    _ => throw new ArgumentException($"Invalid value: {userSettings.Type} for job type name"),
                 };
             }
 

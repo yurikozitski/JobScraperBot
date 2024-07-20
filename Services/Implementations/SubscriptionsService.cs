@@ -53,27 +53,51 @@ namespace JobScraperBot.Services.Implementations
                     {
                         try
                         {
+                            //foreach (var subscriptionInfo in this.subscriptionsStorage.Subscriptions.Values)
+                            //{
+                            //    if (subscriptionInfo.MessageInterval == MessageInterval.Daily &&
+                            //    ((subscriptionInfo.LastSent == null && TimeOnly.FromDateTime(DateTime.UtcNow) > subscriptionInfo.Time) ||
+                            //    (subscriptionInfo.LastSent != null && DateTime.UtcNow.Subtract((DateTime)subscriptionInfo.LastSent) > new TimeSpan(1, 0, 0, 0))))
+                            //    {
+                            //        await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
+                            //    }
+
+                            //    if (subscriptionInfo.MessageInterval == MessageInterval.OnceInTwoDays &&
+                            //    ((subscriptionInfo.LastSent == null && TimeOnly.FromDateTime(DateTime.UtcNow) > subscriptionInfo.Time) ||
+                            //    (subscriptionInfo.LastSent != null && DateTime.UtcNow.Subtract((DateTime)subscriptionInfo.LastSent) > new TimeSpan(2, 0, 0, 0))))
+                            //    {
+                            //        await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
+                            //    }
+
+                            //    if (subscriptionInfo.MessageInterval == MessageInterval.Weekly &&
+                            //    ((subscriptionInfo.LastSent == null && TimeOnly.FromDateTime(DateTime.UtcNow) > subscriptionInfo.Time) ||
+                            //    (subscriptionInfo.LastSent != null && DateTime.UtcNow.Subtract((DateTime)subscriptionInfo.LastSent) > new TimeSpan(7, 0, 0, 0))))
+                            //    {
+                            //        await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
+                            //    }
+                            //}
                             foreach (var subscriptionInfo in this.subscriptionsStorage.Subscriptions.Values)
                             {
-                                if (subscriptionInfo.MessageInterval == MessageInterval.Daily &&
-                                ((subscriptionInfo.LastSent == null && TimeOnly.FromDateTime(DateTime.UtcNow) > subscriptionInfo.Time) ||
-                                (subscriptionInfo.LastSent != null && DateTime.UtcNow.Subtract((DateTime)subscriptionInfo.LastSent) > new TimeSpan(1, 0, 0, 0))))
+                                if (subscriptionInfo.LastSent.Day != DateTime.UtcNow.Day &&
+                                TimeOnly.FromDateTime(DateTime.UtcNow) > subscriptionInfo.Time)
                                 {
-                                    await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
-                                }
+                                    if (subscriptionInfo.MessageInterval == MessageInterval.Daily &&
+                                    subscriptionInfo.LastSent.AddDays(1).Day == DateTime.UtcNow.Day)
+                                    {
+                                        await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
+                                    }
 
-                                if (subscriptionInfo.MessageInterval == MessageInterval.OnceInTwoDays &&
-                                ((subscriptionInfo.LastSent == null && TimeOnly.FromDateTime(DateTime.UtcNow) > subscriptionInfo.Time) ||
-                                (subscriptionInfo.LastSent != null && DateTime.UtcNow.Subtract((DateTime)subscriptionInfo.LastSent) > new TimeSpan(2, 0, 0, 0))))
-                                {
-                                    await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
-                                }
+                                    if (subscriptionInfo.MessageInterval == MessageInterval.OnceInTwoDays &&
+                                    subscriptionInfo.LastSent.AddDays(2).Day == DateTime.UtcNow.Day)
+                                    {
+                                        await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
+                                    }
 
-                                if (subscriptionInfo.MessageInterval == MessageInterval.Weekly &&
-                                ((subscriptionInfo.LastSent == null && TimeOnly.FromDateTime(DateTime.UtcNow) > subscriptionInfo.Time) ||
-                                (subscriptionInfo.LastSent != null && DateTime.UtcNow.Subtract((DateTime)subscriptionInfo.LastSent) > new TimeSpan(7, 0, 0, 0))))
-                                {
-                                    await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
+                                    if (subscriptionInfo.MessageInterval == MessageInterval.Weekly &&
+                                    subscriptionInfo.LastSent.AddDays(7).Day == DateTime.UtcNow.Day)
+                                    {
+                                        await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
+                                    }
                                 }
                             }
                         }
@@ -119,9 +143,20 @@ namespace JobScraperBot.Services.Implementations
                             Type = subscriptionParams[4].Trim(),
                         };
 
-                        var subscriptionInfo = new SubscriptionInfo(chatId, userSettings, messageInterval, time);
+                        var subscriptionInfo = new SubscriptionInfo(chatId, userSettings, messageInterval, time)
+                        {
+                            LastSent = DateTime.Parse(subscriptionParams[5].Trim(), CultureInfo.InvariantCulture),
+                        };
 
-                        this.subscriptionsStorage.Subscriptions.TryAdd(chatId, subscriptionInfo);
+                        if (!this.subscriptionsStorage.Subscriptions.ContainsKey(chatId))
+                        {
+                            this.subscriptionsStorage.Subscriptions.TryAdd(chatId, subscriptionInfo);
+                        }
+                        else
+                        {
+                            this.subscriptionsStorage.Subscriptions.TryGetValue(chatId, out SubscriptionInfo? previousValue);
+                            this.subscriptionsStorage.Subscriptions.TryUpdate(chatId, subscriptionInfo, previousValue!);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -143,7 +178,19 @@ namespace JobScraperBot.Services.Implementations
                 subscriptionInfo.ChatId,
                 vacancies);
 
-            subscriptionInfo.LastSent = DateTime.UtcNow;
+            await UpdateLastSentDate(subscriptionInfo.ChatId);
+        }
+
+#pragma warning disable SA1204 // Static elements should appear before instance elements
+        private static async Task UpdateLastSentDate(long chatId)
+        {
+            string path = Directory.GetCurrentDirectory() + "\\Subscriptions" + $"\\{chatId}_subscription.txt";
+            string subscription = await File.ReadAllTextAsync(path);
+            string[] subscriptionParams = subscription.Split(',');
+            subscriptionParams[subscriptionParams.Length - 1] = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+            string newSubscription = string.Join(",", subscriptionParams);
+
+            await File.WriteAllTextAsync(path, newSubscription);
         }
     }
 }
