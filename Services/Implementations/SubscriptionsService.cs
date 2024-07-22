@@ -3,6 +3,7 @@ using JobScraperBot.Models;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 
 namespace JobScraperBot.Services.Implementations
@@ -13,17 +14,20 @@ namespace JobScraperBot.Services.Implementations
         private readonly IVacancyService vacancyService;
         private readonly IConfiguration configuration;
         private readonly IHttpClientFactory httpClientFactory;
+        private readonly ILogger<SubscriptionsService> logger;
 
         public SubscriptionsService(
             IUserSubscriptionsStorage subscriptionsStorage,
             IVacancyService vacancyService,
             IConfiguration configuration,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            ILogger<SubscriptionsService> logger)
         {
             this.subscriptionsStorage = subscriptionsStorage;
             this.vacancyService = vacancyService;
             this.configuration = configuration;
             this.httpClientFactory = httpClientFactory;
+            this.logger = logger;
         }
 
         public Task ReadFromFilesAsync(CancellationToken token)
@@ -58,19 +62,19 @@ namespace JobScraperBot.Services.Implementations
 
                     if (!this.subscriptionsStorage.Subscriptions.IsEmpty)
                     {
-                        try
+                        foreach (var subscriptionInfo in this.subscriptionsStorage.Subscriptions.Values)
                         {
-                            foreach (var subscriptionInfo in this.subscriptionsStorage.Subscriptions.Values)
+                            try
                             {
                                 if (DateTime.UtcNow > subscriptionInfo.NextUpdate)
                                 {
                                     await this.SendVacanciesAsync(this.configuration!["botToken"]!, subscriptionInfo, token);
                                 }
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.Message);
+                            catch (Exception ex)
+                            {
+                                this.logger.LogError(ex, "Can't send vacancies from subscription");
+                            }
                         }
                     }
 
@@ -127,7 +131,7 @@ namespace JobScraperBot.Services.Implementations
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(ex.Message);
+                        this.logger.LogError(ex, "Error occured while loading subscriptions from files");
                     }
                 }
             }
@@ -135,17 +139,22 @@ namespace JobScraperBot.Services.Implementations
 
         private async Task SendVacanciesAsync(string token, SubscriptionInfo subscriptionInfo, CancellationToken cancellationToken)
         {
-            var vacancies = await this.vacancyService.GetVacanciesAsync(
-                new TelegramBotClient(token, this.httpClientFactory.CreateClient(), cancellationToken),
-                subscriptionInfo.ChatId,
-                subscriptionInfo.UserSettings);
+            try
+            {
+                var vacancies = await this.vacancyService.GetVacanciesAsync(
+                    new TelegramBotClient(token, this.httpClientFactory.CreateClient(), cancellationToken),
+                    subscriptionInfo.ChatId,
+                    subscriptionInfo.UserSettings);
 
-            await this.vacancyService.ShowVacanciesAsync(
-                new TelegramBotClient(token, this.httpClientFactory.CreateClient(), cancellationToken),
-                subscriptionInfo.ChatId,
-                vacancies);
-
-            await UpdateLastSentDate(subscriptionInfo);
+                await this.vacancyService.ShowVacanciesAsync(
+                    new TelegramBotClient(token, this.httpClientFactory.CreateClient(), cancellationToken),
+                    subscriptionInfo.ChatId,
+                    vacancies);
+            }
+            finally
+            {
+                await UpdateLastSentDate(subscriptionInfo);
+            }
         }
 
 #pragma warning disable SA1204 // Static elements should appear before instance elements

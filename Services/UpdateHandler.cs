@@ -1,6 +1,7 @@
 ﻿using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -20,6 +21,7 @@ namespace JobScraperBot.Services
         private readonly IVacancyVisibilityService vacancyVisibilityService;
         private readonly IResultChoosingHandler resultChoosingHandler;
         private readonly ISubscriptionWriter subscriptionWriter;
+        private readonly ILogger<UpdateHandler> logger;
 
         public UpdateHandler(
             IUserStateStorage userStateStorage,
@@ -31,7 +33,8 @@ namespace JobScraperBot.Services
             IMenuHandler menuHandler,
             IVacancyVisibilityService visibilityService,
             IResultChoosingHandler resultChoosingHandler,
-            ISubscriptionWriter subscriptionWriter)
+            ISubscriptionWriter subscriptionWriter,
+            ILogger<UpdateHandler> logger)
         {
             this.userStateStorage = userStateStorage;
             this.userStateService = userStateService;
@@ -43,11 +46,12 @@ namespace JobScraperBot.Services
             this.vacancyVisibilityService = visibilityService;
             this.resultChoosingHandler = resultChoosingHandler;
             this.subscriptionWriter = subscriptionWriter;
+            this.logger = logger;
         }
 
         public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, HandleErrorSource source, CancellationToken cancellationToken)
         {
-            Console.WriteLine(exception);
+            this.logger.LogError(exception, "Exeption occured");
         }
 
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)

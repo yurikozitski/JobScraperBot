@@ -1,11 +1,10 @@
-﻿using System.IO.Compression;
-using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
+using JobScraperBot.Exceptions;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 using JobsScraper.BLL.Models;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace JobScraperBot.Services.Implementations
@@ -14,33 +13,37 @@ namespace JobScraperBot.Services.Implementations
     {
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IRequestStringService requestStringService;
+        private readonly ILogger<VacancyService> logger;
 
-        public VacancyService(IRequestStringService requestStringService, IHttpClientFactory httpClientFactory)
+        public VacancyService(
+            IRequestStringService requestStringService,
+            IHttpClientFactory httpClientFactory,
+            ILogger<VacancyService> logger)
         {
             this.requestStringService = requestStringService;
             this.httpClientFactory = httpClientFactory;
+            this.logger = logger;
         }
 
         public async Task<IEnumerable<Vacancy>> GetVacanciesAsync(ITelegramBotClient bot, long chatId, UserSettings userSettings)
         {
             string requestString = this.requestStringService.GetRequestString(userSettings);
 
-            string response;
+            string? response = default;
 
             try
             {
                 response = await this.httpClientFactory.CreateClient().GetStringAsync(requestString);
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                Console.WriteLine("\nCan't load vacancies!");
                 await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
-                throw;
+                throw new VacancyLoadException(ex.Message, requestString);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
-                throw;
+                throw new VacancyLoadException(ex.Message, requestString);
             }
 
             //using StreamReader r = new StreamReader("testData.json");
@@ -91,9 +94,9 @@ namespace JobScraperBot.Services.Implementations
                 {
                     await bot.SendTextMessageAsync(chatId, vacancyView, replyMarkup: new InlineKeyboardMarkup(GetVacancyButton(trimmedLink)));
                 }
-                catch
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Can't show vacancy: {vacancy.Link}");
+                    this.logger.LogError(ex, $"Can't show vacancy: {vacancy.Link}");
                 }
             }
         }
