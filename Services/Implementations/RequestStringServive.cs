@@ -1,23 +1,32 @@
 ﻿using System.Text;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
+using Microsoft.Extensions.Configuration;
 
 namespace JobScraperBot.Services.Implementations
 {
     internal class RequestStringServive : IRequestStringService
     {
-        private readonly string domain = "https://localhost:7055/jobs/find?";
+        private readonly IConfiguration configuration;
+
+        public RequestStringServive(IConfiguration configuration)
+        {
+            this.configuration = configuration;
+        }
 
         public string GetRequestString(UserSettings userSettings)
         {
             ArgumentNullException.ThrowIfNull(userSettings);
 
-            var requestSb = new StringBuilder(this.domain);
+            var requestSb = new StringBuilder(this.configuration["parsingApi"]);
 
             _ = userSettings.Stack switch
             {
                 _ when userSettings.Stack.Equals("Front End", StringComparison.InvariantCulture) => requestSb.Append("JobStack=JavaScriptFrontEnd"),
                 _ when userSettings.Stack.Equals(".NET", StringComparison.InvariantCulture) => requestSb.Append("JobStack=CSharpDotNET"),
+                _ when userSettings.Stack.Equals("Full Stack", StringComparison.InvariantCulture) => requestSb.Append("JobStack=Fullstack"),
+                _ when userSettings.Stack.Equals("Python", StringComparison.InvariantCulture) => requestSb.Append("JobStack=Python"),
+                _ when userSettings.Stack.Equals("Java", StringComparison.InvariantCulture) => requestSb.Append("JobStack=Java"),
                 _ => throw new ArgumentException($"Invalid value: {userSettings.Stack} for stack name"),
             };
 

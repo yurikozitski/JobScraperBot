@@ -27,24 +27,24 @@ namespace JobScraperBot.Services.Implementations
 
             string response;
 
-            //try
-            //{
-            //    response = await this.httpClientFactory.CreateClient().GetStringAsync(requestString);
-            //}
-            //catch (HttpRequestException)
-            //{
-            //    Console.WriteLine("\nCan't load vacancies!");
-            //    await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
-            //    throw;
-            //}
-            //catch (Exception)
-            //{
-            //    await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
-            //    throw;
-            //}
+            try
+            {
+                response = await this.httpClientFactory.CreateClient().GetStringAsync(requestString);
+            }
+            catch (HttpRequestException)
+            {
+                Console.WriteLine("\nCan't load vacancies!");
+                await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
+                throw;
+            }
+            catch (Exception)
+            {
+                await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
+                throw;
+            }
 
-            using StreamReader r = new StreamReader("testData.json");
-            response = r.ReadToEnd();
+            //using StreamReader r = new StreamReader("testData.json");
+            //response = r.ReadToEnd();
 
             var options = new JsonSerializerOptions
             {

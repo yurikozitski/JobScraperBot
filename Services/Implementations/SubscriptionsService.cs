@@ -2,6 +2,7 @@
 using JobScraperBot.Models;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
+using Microsoft.Extensions.Configuration;
 using Telegram.Bot;
 
 namespace JobScraperBot.Services.Implementations
@@ -10,13 +11,19 @@ namespace JobScraperBot.Services.Implementations
     {
         private readonly IUserSubscriptionsStorage subscriptionsStorage;
         private readonly IVacancyService vacancyService;
+        private readonly IConfiguration configuration;
+        private readonly IHttpClientFactory httpClientFactory;
 
         public SubscriptionsService(
             IUserSubscriptionsStorage subscriptionsStorage,
-            IVacancyService vacancyService)
+            IVacancyService vacancyService,
+            IConfiguration configuration,
+            IHttpClientFactory httpClientFactory)
         {
             this.subscriptionsStorage = subscriptionsStorage;
             this.vacancyService = vacancyService;
+            this.configuration = configuration;
+            this.httpClientFactory = httpClientFactory;
         }
 
         public Task ReadFromFilesAsync(CancellationToken token)
@@ -57,7 +64,7 @@ namespace JobScraperBot.Services.Implementations
                             {
                                 if (DateTime.UtcNow > subscriptionInfo.NextUpdate)
                                 {
-                                    await this.SendVacanciesAsync("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", subscriptionInfo, token);
+                                    await this.SendVacanciesAsync(this.configuration!["botToken"]!, subscriptionInfo, token);
                                 }
                             }
                         }
@@ -129,12 +136,12 @@ namespace JobScraperBot.Services.Implementations
         private async Task SendVacanciesAsync(string token, SubscriptionInfo subscriptionInfo, CancellationToken cancellationToken)
         {
             var vacancies = await this.vacancyService.GetVacanciesAsync(
-                new TelegramBotClient(token, default, cancellationToken),
+                new TelegramBotClient(token, this.httpClientFactory.CreateClient(), cancellationToken),
                 subscriptionInfo.ChatId,
                 subscriptionInfo.UserSettings);
 
             await this.vacancyService.ShowVacanciesAsync(
-                new TelegramBotClient(token, default, cancellationToken),
+                new TelegramBotClient(token, this.httpClientFactory.CreateClient(), cancellationToken),
                 subscriptionInfo.ChatId,
                 vacancies);
 

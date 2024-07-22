@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 /testData.json
+/appsettings.json

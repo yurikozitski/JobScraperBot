@@ -1,8 +1,8 @@
 ﻿using JobScraperBot.Services;
 using JobScraperBot.Services.Implementations;
 using JobScraperBot.Services.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Telegram.Bot;
 using Telegram.Bot.Polling;
 
 namespace JobScraperBot.Extensions
@@ -11,6 +11,11 @@ namespace JobScraperBot.Extensions
     {
         public static IServiceCollection AddBotServices(this IServiceCollection services)
         {
+            var builder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json");
+
+            IConfiguration configuration = builder.Build();
+
             return services.AddSingleton<IUserStateStorage, UserStateStorage>()
                     .AddSingleton<IUserStateService, UserStateService>()
                     .AddSingleton<IResponseMessageService, ResponseMessageService>()
@@ -26,7 +31,7 @@ namespace JobScraperBot.Extensions
                     .AddTransient<IRequestStringService, RequestStringServive>()
                     .AddTransient<IVacancyService, VacancyService>()
                     .AddTransient<IUpdateHandler, UpdateHandler>()
-                    //.AddTransient<ITelegramBotClient, TelegramBotClient>()
+                    .AddTransient<IConfiguration>(_ => configuration)
                     .AddHttpClient();
         }
     }

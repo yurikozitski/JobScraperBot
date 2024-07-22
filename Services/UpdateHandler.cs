@@ -1,5 +1,6 @@
 ﻿using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
+using Microsoft.Extensions.Configuration;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;

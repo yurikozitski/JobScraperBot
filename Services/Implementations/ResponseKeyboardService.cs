@@ -18,11 +18,13 @@ namespace JobScraperBot.Services.Implementations
         {
             return state switch
             {
-                //UserState.OnStart => null,
                 UserState.OnStackChoosing => new KeyboardButton[][]
                 {
                     new KeyboardButton[] { this.optionsProvider.Stacks[JobStacks.CSharpDotNET] },
                     new KeyboardButton[] { this.optionsProvider.Stacks[JobStacks.JavaScriptFrontEnd] },
+                    new KeyboardButton[] { this.optionsProvider.Stacks[JobStacks.Java] },
+                    new KeyboardButton[] { this.optionsProvider.Stacks[JobStacks.Python] },
+                    new KeyboardButton[] { this.optionsProvider.Stacks[JobStacks.Fullstack] },
                 },
                 UserState.OnGradeChoosing => new KeyboardButton[][]
                 {
@@ -44,7 +46,6 @@ namespace JobScraperBot.Services.Implementations
                     new KeyboardButton[] { this.optionsProvider.ResultTypes["now"] },
                     new KeyboardButton[] { this.optionsProvider.ResultTypes["with_subscription"] },
                 },
-                //UserState.OnEnd => null,
                 _ => null
             };
         }

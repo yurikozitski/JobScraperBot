@@ -9,7 +9,15 @@ namespace JobScraperBot.Services.Implementations
         {
             return state switch
             {
-                UserState.OnGreeting => "Вас вітає бот і т.д",
+                UserState.OnGreeting => string.Join(
+                    Environment.NewLine,
+                    "Вас вітає бот для пошуку роботи в ІТ.",
+                    "Підберіть необхідні для Вас налаштування",
+                    "слідуючи подальшим інстукціям.",
+                    "Ви можете використовувати такі команди меню:",
+                    "/reset - скинути свої налаштування,",
+                    "/confirm - завершити налаштування.",
+                    "Введіть будь-що, щоб продовжити."),
                 UserState.OnStackChoosing => "Виберіть стек",
                 UserState.OnGradeChoosing => "Виберіть рівень",
                 UserState.OnTypeChoosing => "Виберіть вид роботи",

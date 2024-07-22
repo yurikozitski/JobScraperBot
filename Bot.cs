@@ -1,4 +1,5 @@
 ﻿using JobScraperBot.Services.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
@@ -16,8 +17,10 @@ namespace JobScraperBot
 
         public async Task Run()
         {
+            var config = this.serviceProvider.GetService<IConfiguration>();
+
             using var cts = new CancellationTokenSource();
-            var bot = new TelegramBotClient("7448548753:AAEkSnA2KdnzTExqwgz_sguLJ3UJo2pp4hU", cancellationToken: cts.Token);
+            var bot = new TelegramBotClient(config!["botToken"]!, cancellationToken: cts.Token);
 
             bot.StartReceiving(this.serviceProvider.GetService<IUpdateHandler>()!.HandleUpdateAsync, this.serviceProvider.GetService<IUpdateHandler>()!.HandleErrorAsync);
 

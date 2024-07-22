@@ -9,6 +9,9 @@ namespace JobScraperBot.Services.Implementations
         {
             { JobStacks.CSharpDotNET, ".NET" },
             { JobStacks.JavaScriptFrontEnd, "Front End" },
+            { JobStacks.Java, "Java" },
+            { JobStacks.Fullstack, "Full Stack" },
+            { JobStacks.Python, "Python" },
         };
 
         public Dictionary<Grades, string> Levels => new Dictionary<Grades, string>()
