@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace JobScraperBot.Exceptions
+﻿namespace JobScraperBot.Exceptions
 {
     public class VacancyLoadException : Exception
     {
