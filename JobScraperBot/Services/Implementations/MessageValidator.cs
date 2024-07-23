@@ -5,7 +5,7 @@ using Telegram.Bot.Types;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class MessageValidator : IMessageValidator
+    public class MessageValidator : IMessageValidator
     {
         private readonly IOptionsProvider optionsProvider;
 
@@ -14,13 +14,13 @@ namespace JobScraperBot.Services.Implementations
             this.optionsProvider = optionsProvider;
         }
 
-        public bool IsMessageValid(Message message, UserState userState)
+        public bool IsMessageValid(string message, UserState userState)
         {
-            if (message == null || message.Text == null)
+            if (string.IsNullOrEmpty(message))
                 return false;
 
-            if (message.Text == "/reset" ||
-                message.Text == "/confirm")
+            if (message == "/reset" ||
+                message == "/confirm")
                 return true;
 
             string subsRegPat = @"^(щодня|через день|щотижня),\s?[0-2][0-9]:[0-5][0-9]";
@@ -28,11 +28,11 @@ namespace JobScraperBot.Services.Implementations
 
             return userState switch
             {
-                UserState.OnStackChoosing => this.optionsProvider.Stacks.ContainsValue(message.Text),
-                UserState.OnGradeChoosing => this.optionsProvider.Levels.ContainsValue(message.Text),
-                UserState.OnTypeChoosing => this.optionsProvider.JobKinds.ContainsValue(message.Text),
-                UserState.OnResultChoosing => this.optionsProvider.ResultTypes.ContainsValue(message.Text),
-                UserState.OnSubscriptionSetting => subsReg.IsMatch(message.Text),
+                UserState.OnStackChoosing => this.optionsProvider.Stacks.ContainsValue(message),
+                UserState.OnGradeChoosing => this.optionsProvider.Levels.ContainsValue(message),
+                UserState.OnTypeChoosing => this.optionsProvider.JobKinds.ContainsValue(message),
+                UserState.OnResultChoosing => this.optionsProvider.ResultTypes.ContainsValue(message),
+                UserState.OnSubscriptionSetting => subsReg.IsMatch(message),
                 _ => true,
             };
         }

@@ -3,7 +3,7 @@ using JobsScraper.BLL.Enums;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class OptionsProvider : IOptionsProvider
+    public class OptionsProvider : IOptionsProvider
     {
         public Dictionary<JobStacks, string> Stacks => new Dictionary<JobStacks, string>()
         {

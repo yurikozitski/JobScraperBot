@@ -2,7 +2,7 @@
 
 namespace JobScraperBot.Models
 {
-    internal class SubscriptionInfo
+    public class SubscriptionInfo
     {
         public long ChatId { get; }
 

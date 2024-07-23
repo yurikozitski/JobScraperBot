@@ -1,6 +1,6 @@
 ﻿namespace JobScraperBot.State
 {
-    internal class UserSettings
+    public class UserSettings
     {
         public string Stack { get; set; } = default!;
 

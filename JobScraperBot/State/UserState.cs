@@ -1,6 +1,6 @@
 ﻿namespace JobScraperBot.State
 {
-    internal enum UserState
+    public enum UserState
     {
         OnStart,
         OnGreeting,

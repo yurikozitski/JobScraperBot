@@ -3,8 +3,8 @@ using Telegram.Bot.Types;
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface IMessageValidator
+    public interface IMessageValidator
     {
-        bool IsMessageValid(Message message, UserState userState);
+        bool IsMessageValid(string message, UserState userState);
     }
 }

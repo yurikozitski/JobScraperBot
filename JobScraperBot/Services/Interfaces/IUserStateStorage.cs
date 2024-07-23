@@ -3,7 +3,7 @@ using JobScraperBot.State;
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface IUserStateStorage
+    public interface IUserStateStorage
     {
         ConcurrentDictionary<long, IUserStateMachine> StateStorage { get; }
     }

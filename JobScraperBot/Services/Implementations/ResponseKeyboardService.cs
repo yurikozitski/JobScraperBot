@@ -5,7 +5,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class ResponseKeyboardService : IResponseKeyboardService
+    public class ResponseKeyboardService : IResponseKeyboardService
     {
         private readonly IOptionsProvider optionsProvider;
 

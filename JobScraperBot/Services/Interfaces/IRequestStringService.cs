@@ -2,7 +2,7 @@
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface IRequestStringService
+    public interface IRequestStringService
     {
         string GetRequestString(UserSettings userSettings);
     }

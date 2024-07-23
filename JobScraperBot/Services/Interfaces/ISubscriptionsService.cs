@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface ISubscriptionsService
+    public interface ISubscriptionsService
     {
         Task ReadFromFilesAsync(CancellationToken token);
 

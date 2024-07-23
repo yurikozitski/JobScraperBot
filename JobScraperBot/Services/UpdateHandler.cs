@@ -9,7 +9,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace JobScraperBot.Services
 {
-    internal class UpdateHandler : IUpdateHandler
+    public class UpdateHandler : IUpdateHandler
     {
         private readonly IUserStateStorage userStateStorage;
         private readonly IUserStateService userStateService;
@@ -73,7 +73,7 @@ namespace JobScraperBot.Services
                 this.userStateStorage.StateStorage.TryAdd(chatId, currentUserState);
             }
 
-            if (!this.messageValidator.IsMessageValid(update.Message, currentUserState.State))
+            if (!this.messageValidator.IsMessageValid(update.Message.Text, currentUserState.State))
             {
                 await botClient.SendTextMessageAsync(chatId, $"Команда '{update.Message.Text}' не валідна");
                 return;

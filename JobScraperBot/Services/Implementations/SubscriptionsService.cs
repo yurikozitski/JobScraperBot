@@ -8,7 +8,7 @@ using Telegram.Bot;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class SubscriptionsService : ISubscriptionsService
+    public class SubscriptionsService : ISubscriptionsService
     {
         private readonly IUserSubscriptionsStorage subscriptionsStorage;
         private readonly IVacancyService vacancyService;

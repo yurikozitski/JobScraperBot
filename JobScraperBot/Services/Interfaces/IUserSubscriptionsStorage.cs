@@ -3,7 +3,7 @@ using JobScraperBot.Models;
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface IUserSubscriptionsStorage
+    public interface IUserSubscriptionsStorage
     {
         ConcurrentDictionary<long, SubscriptionInfo> Subscriptions { get; }
     }

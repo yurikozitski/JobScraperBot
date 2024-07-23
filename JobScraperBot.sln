@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JobScraperBot", "JobScraperBot\JobScraperBot.csproj", "{10B40A2C-62C8-4F42-A65B-48A7B55A474A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobScraperBot.Tests", "JobScraperBot.Tests\JobScraperBot.Tests.csproj", "{0B966CE9-0FD6-4339-97F5-6EC2410F9CFC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{10B40A2C-62C8-4F42-A65B-48A7B55A474A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10B40A2C-62C8-4F42-A65B-48A7B55A474A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10B40A2C-62C8-4F42-A65B-48A7B55A474A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B966CE9-0FD6-4339-97F5-6EC2410F9CFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B966CE9-0FD6-4339-97F5-6EC2410F9CFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B966CE9-0FD6-4339-97F5-6EC2410F9CFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B966CE9-0FD6-4339-97F5-6EC2410F9CFC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

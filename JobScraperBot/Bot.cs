@@ -6,7 +6,7 @@ using Telegram.Bot.Polling;
 
 namespace JobScraperBot
 {
-    internal class Bot
+    public class Bot
     {
         private readonly ServiceProvider serviceProvider;
 

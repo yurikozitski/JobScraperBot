@@ -3,7 +3,7 @@ using JobScraperBot.State;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class ResponseMessageService : IResponseMessageService
+    public class ResponseMessageService : IResponseMessageService
     {
         public string GetResponseMessage(UserState state, UserSettings userSettings)
         {

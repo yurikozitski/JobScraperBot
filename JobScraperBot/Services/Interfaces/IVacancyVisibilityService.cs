@@ -8,7 +8,7 @@ using Telegram.Bot.Types;
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface IVacancyVisibilityService
+    public interface IVacancyVisibilityService
     {
         Task HandleVacancyVisibilityAsync(ITelegramBotClient botClient, Update update);
 

@@ -2,7 +2,7 @@
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface ISubscriptionWriter
+    public interface ISubscriptionWriter
     {
         Task WriteSubscriptionAsync(long chatId, string sbscrptnText, IUserStateMachine userState);
     }

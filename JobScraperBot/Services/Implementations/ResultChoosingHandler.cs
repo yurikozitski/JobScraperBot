@@ -3,7 +3,7 @@ using JobScraperBot.State;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class ResultChoosingHandler : IResultChoosingHandler
+    public class ResultChoosingHandler : IResultChoosingHandler
     {
         public void HandleResult(string message, IUserStateMachine userState)
         {

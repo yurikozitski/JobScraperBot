@@ -2,7 +2,7 @@
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface IUserStateService
+    public interface IUserStateService
     {
         void UpdateUserSettings(long chatId, Update update);
     }

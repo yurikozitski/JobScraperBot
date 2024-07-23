@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class RequestStringServive : IRequestStringService
+    public class RequestStringServive : IRequestStringService
     {
         private readonly IConfiguration configuration;
 

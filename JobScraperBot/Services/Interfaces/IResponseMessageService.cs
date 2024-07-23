@@ -2,7 +2,7 @@
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface IResponseMessageService
+    public interface IResponseMessageService
     {
         string GetResponseMessage(UserState state, UserSettings userSettings);
     }

@@ -4,7 +4,7 @@ using Telegram.Bot;
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface IVacancyService
+    public interface IVacancyService
     {
         Task<IEnumerable<Vacancy>> GetVacanciesAsync(ITelegramBotClient bot, long chatId, UserSettings userSettings);
 

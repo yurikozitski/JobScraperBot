@@ -4,7 +4,7 @@ using JobScraperBot.Services.Interfaces;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class UserSubscriptionsStorage : IUserSubscriptionsStorage
+    public class UserSubscriptionsStorage : IUserSubscriptionsStorage
     {
         public ConcurrentDictionary<long, SubscriptionInfo> Subscriptions { get; }
 

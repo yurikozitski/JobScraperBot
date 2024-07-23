@@ -5,7 +5,7 @@ using JobScraperBot.State;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class SubscriptionWriter : ISubscriptionWriter
+    public class SubscriptionWriter : ISubscriptionWriter
     {
         public async Task WriteSubscriptionAsync(long chatId, string sbscrptnText, IUserStateMachine userState)
         {

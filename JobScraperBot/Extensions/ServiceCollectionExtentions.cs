@@ -9,7 +9,7 @@ using Telegram.Bot.Polling;
 
 namespace JobScraperBot.Extensions
 {
-    internal static class ServiceCollectionExtentions
+    public static class ServiceCollectionExtentions
     {
         public static IServiceCollection AddBotServices(this IServiceCollection services)
         {

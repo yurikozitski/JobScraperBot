@@ -3,7 +3,7 @@ using Telegram.Bot.Types;
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface IResultChoosingHandler
+    public interface IResultChoosingHandler
     {
         void HandleResult(string message, IUserStateMachine userState);
     }

@@ -5,7 +5,7 @@ using Telegram.Bot.Types;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class MenuHandler : IMenuHandler
+    public class MenuHandler : IMenuHandler
     {
         private readonly IUserSubscriptionsStorage subscriptionsStorage;
 

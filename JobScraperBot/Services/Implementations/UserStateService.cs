@@ -4,7 +4,7 @@ using Telegram.Bot.Types;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class UserStateService : IUserStateService
+    public class UserStateService : IUserStateService
     {
         private readonly IUserStateStorage storage;
 

@@ -5,7 +5,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class VacancyVisibilityService : IVacancyVisibilityService
+    public class VacancyVisibilityService : IVacancyVisibilityService
     {
         public async Task HandleVacancyVisibilityAsync(ITelegramBotClient botClient, Update update)
         {

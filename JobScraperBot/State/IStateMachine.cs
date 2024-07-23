@@ -1,6 +1,6 @@
 ﻿namespace JobScraperBot.State
 {
-    internal interface IStateMachine<out T>
+    public interface IStateMachine<out T>
     {
         T State { get; }
 

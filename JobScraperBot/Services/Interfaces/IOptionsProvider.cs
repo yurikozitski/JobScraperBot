@@ -2,7 +2,7 @@
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface IOptionsProvider
+    public interface IOptionsProvider
     {
         Dictionary<JobStacks, string> Stacks { get; }
 

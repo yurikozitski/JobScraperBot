@@ -3,7 +3,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace JobScraperBot.Services.Interfaces
 {
-    internal interface IResponseKeyboardService
+    public interface IResponseKeyboardService
     {
         KeyboardButton[][]? GetResponseButtons(UserState state);
     }

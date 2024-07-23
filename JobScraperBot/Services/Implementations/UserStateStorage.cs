@@ -4,7 +4,7 @@ using JobScraperBot.State;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class UserStateStorage : IUserStateStorage
+    public class UserStateStorage : IUserStateStorage
     {
         public ConcurrentDictionary<long, IUserStateMachine> StateStorage { get; }
 

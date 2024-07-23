@@ -1,6 +1,6 @@
 ﻿namespace JobScraperBot.State
 {
-    internal class UserStateMachine : IUserStateMachine
+    public class UserStateMachine : IUserStateMachine
     {
         public UserState State { get; private set; }
 

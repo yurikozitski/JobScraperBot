@@ -9,7 +9,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace JobScraperBot.Services.Implementations
 {
-    internal class VacancyService : IVacancyService
+    public class VacancyService : IVacancyService
     {
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IRequestStringService requestStringService;
