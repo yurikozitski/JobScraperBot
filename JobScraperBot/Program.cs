@@ -21,5 +21,6 @@ catch (Exception ex)
 }
 finally
 {
+    //loger shutdown
     LogManager.Shutdown();
 }
