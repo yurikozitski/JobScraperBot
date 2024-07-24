@@ -30,6 +30,7 @@ namespace JobScraperBot.Extensions
                     .AddSingleton<ISubscriptionWriter, SubscriptionWriter>()
                     .AddSingleton<IUserSubscriptionsStorage, UserSubscriptionsStorage>()
                     .AddSingleton<ISubscriptionsService, SubscriptionsService>()
+                    .AddSingleton<IFileRemover, FileRemover>()
                     .AddTransient<IRequestStringService, RequestStringServive>()
                     .AddTransient<IVacancyService, VacancyService>()
                     .AddTransient<IUpdateHandler, UpdateHandler>()

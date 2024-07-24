@@ -8,10 +8,14 @@ namespace JobScraperBot.Services.Implementations
     public class MenuHandler : IMenuHandler
     {
         private readonly IUserSubscriptionsStorage subscriptionsStorage;
+        private readonly IFileRemover fileRemover;
 
-        public MenuHandler(IUserSubscriptionsStorage userSubscriptionsStorage)
+        public MenuHandler(
+            IUserSubscriptionsStorage userSubscriptionsStorage,
+            IFileRemover fileRemover)
         {
             this.subscriptionsStorage = userSubscriptionsStorage;
+            this.fileRemover = fileRemover;
         }
 
         public async Task HandleMenuAsync(ITelegramBotClient botClient, Message message, IUserStateMachine currentUserState)
@@ -28,25 +32,11 @@ namespace JobScraperBot.Services.Implementations
                 string subPathHidden = Directory.GetCurrentDirectory() + "\\HiddenVacancies";
                 string subPathSbcscr = Directory.GetCurrentDirectory() + "\\Subscriptions";
 
-                if (Directory.Exists(subPathHidden))
-                {
-                    string path = subPathHidden + $"\\{message.Chat.Id}_hidden.txt";
+                string pathHidden = subPathHidden + $"\\{message.Chat.Id}_hidden.txt";
+                string pathSbcscr = subPathSbcscr + $"\\{message.Chat.Id}_subscription.txt";
 
-                    if (System.IO.File.Exists(path))
-                    {
-                        System.IO.File.Delete(path);
-                    }
-                }
-
-                if (Directory.Exists(subPathSbcscr))
-                {
-                    string path = subPathSbcscr + $"\\{message.Chat.Id}_subscription.txt";
-
-                    if (System.IO.File.Exists(path))
-                    {
-                        System.IO.File.Delete(path);
-                    }
-                }
+                this.fileRemover.RemoveFile(pathHidden);
+                this.fileRemover.RemoveFile(pathSbcscr);
             }
 
             if (message.Text == "/confirm")

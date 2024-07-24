@@ -20,7 +20,7 @@ namespace JobScraperBot.Tests
         [InlineData("/confirm", UserState.OnSubscriptionSetting, true)]
         public void MessageValidator_IsMessageValid_ValidatesMessages(string message, UserState userState, bool expected)
         {
-            //arrange
+            // arrange
             var optionsProviderMock = new Mock<IOptionsProvider>();
             optionsProviderMock
                 .Setup(x => x.Stacks)
@@ -35,13 +35,12 @@ namespace JobScraperBot.Tests
                 .Setup(x => x.JobKinds)
                 .Returns(new OptionsProvider().JobKinds);
 
-
             var messageValidator = new MessageValidator(optionsProviderMock.Object);
 
-            //act
+            // act
             bool isMessageValid = messageValidator.IsMessageValid(message, userState);
 
-            //assert
+            // assert
             Assert.Equal(expected, isMessageValid);
         }
     }
