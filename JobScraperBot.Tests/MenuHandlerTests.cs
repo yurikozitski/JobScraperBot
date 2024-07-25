@@ -113,5 +113,35 @@ namespace JobScraperBot.Tests
             // Assert
             Assert.Equal(UserState.OnStart, userStateMachine.State);
         }
+
+        [Fact]
+        public async Task HandleMenuAsync_MessegeIsNull_ThrowsArgumentException()
+        {
+            // Arrange
+            Message message = null!;
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+
+            // Act
+            var result = menuHandler.HandleMenuAsync;
+
+            // Assert
+            await Assert.ThrowsAnyAsync<ArgumentException>(async () => await result(this.botClientMock.Object, message, this.userStateMachineMock.Object));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task HandleMenuAsync_MessegeTextIsNullOrEmpty_ThrowsArgumentException(string messageText)
+        {
+            // Arrange
+            var message = new Message { Text = messageText, Chat = new Chat { Id = 12345L } };
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+
+            // Act
+            var result = menuHandler.HandleMenuAsync;
+
+            // Assert
+            await Assert.ThrowsAnyAsync<ArgumentException>(async () => await result(this.botClientMock.Object, message, this.userStateMachineMock.Object));
+        }
     }
 }
