@@ -37,12 +37,12 @@ namespace JobScraperBot.Services.Implementations
                 string path = Directory.GetCurrentDirectory() + "\\Subscriptions";
                 using var watcher = new FileSystemWatcher(path);
 
-                await this.LoadSubscriptions(path);
+                await this.LoadSubscriptionsAsync(path);
 
                 watcher.EnableRaisingEvents = true;
 
-                watcher.Changed += async (o, e) => await this.LoadSubscriptions(path);
-                watcher.Created += async (o, e) => await this.LoadSubscriptions(path);
+                watcher.Changed += async (o, e) => await this.LoadSubscriptionsAsync(path);
+                watcher.Created += async (o, e) => await this.LoadSubscriptionsAsync(path);
 
                 while (!token.IsCancellationRequested)
                 {
@@ -83,7 +83,7 @@ namespace JobScraperBot.Services.Implementations
             });
         }
 
-        private async Task LoadSubscriptions(string path)
+        private async Task LoadSubscriptionsAsync(string path)
         {
             if (Directory.Exists(path))
             {
@@ -153,12 +153,12 @@ namespace JobScraperBot.Services.Implementations
             }
             finally
             {
-                await UpdateLastSentDate(subscriptionInfo);
+                await UpdateLastSentDateAsync(subscriptionInfo);
             }
         }
 
 #pragma warning disable SA1204 // Static elements should appear before instance elements
-        private static async Task UpdateLastSentDate(SubscriptionInfo subscriptionInfo)
+        private static async Task UpdateLastSentDateAsync(SubscriptionInfo subscriptionInfo)
         {
             string path = Directory.GetCurrentDirectory() + "\\Subscriptions" + $"\\{subscriptionInfo.ChatId}_subscription.txt";
             string subscription = await File.ReadAllTextAsync(path);
