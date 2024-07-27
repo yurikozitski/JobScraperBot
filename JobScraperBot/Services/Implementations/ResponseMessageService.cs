@@ -20,14 +20,17 @@ namespace JobScraperBot.Services.Implementations
                     "Введіть будь-що, щоб продовжити."),
                 UserState.OnStackChoosing => "Виберіть стек",
                 UserState.OnGradeChoosing => "Виберіть рівень",
-                UserState.OnTypeChoosing => "Виберіть вид роботи",
+                UserState.OnTypeChoosing => "Виберіть вид роботи або '/confirm' щоб завершити налаштування.",
                 UserState.OnResultChoosing => "Бажаєте отримати результати лише зараз чи додатково налаштувати періодичну підписку?",
                 UserState.OnSubscriptionSetting => string.Join(
                     Environment.NewLine,
                     "Ви можете налаштувати таку періодичність повідомдень з вакансіями:",
                     "'щодня', 'через день', 'щотижня' та вказати час доби у форматі: 'Години:Хвилини'",
                     "Наприклад: 'щодня,18:00' або 'через день,07:38'."),
-                UserState.OnEnd => $"Налаштування завершено, ваша підписка: {userSettings}",
+                UserState.OnEnd => string.Join(
+                    Environment.NewLine,
+                    $"Налаштування завершено, ваша підписка: {userSettings}",
+                    "Зачекайте кілька секунд, результати зараз з'являться"),
                 _ => "щось пішло не так..."
             };
         }
