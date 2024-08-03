@@ -3,6 +3,7 @@ using JobScraperBot.State;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -51,7 +52,10 @@ namespace JobScraperBot.Services
 
         public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, HandleErrorSource source, CancellationToken cancellationToken)
         {
-            this.logger.LogError(exception, "Exeption occured");
+            if (exception is not RequestException)
+            {
+                this.logger.LogError(exception, "Exeption occured");
+            }
         }
 
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)

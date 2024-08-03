@@ -66,6 +66,9 @@ namespace JobScraperBot.Services.Implementations
                 return;
             }
 
+            var hiddenVacanciesLinks = await GetHiddenVacanciesLinksAsync(chatId);
+            int hiddenCount = 0;
+
             foreach (var vacancy in vacancies)
             {
                 string vacancyView = string.Join(
@@ -82,11 +85,10 @@ namespace JobScraperBot.Services.Implementations
 
                 string trimmedLink = GetTrimmedLink(vacancy.Link);
 
-                var hiddenVacanciesLinks = await GetHiddenVacanciesLinksAsync(chatId);
-
                 if (hiddenVacanciesLinks != null &&
                     hiddenVacanciesLinks.Contains(trimmedLink))
                 {
+                    hiddenCount++;
                     continue;
                 }
 
@@ -99,6 +101,8 @@ namespace JobScraperBot.Services.Implementations
                     this.logger.LogError(ex, $"Can't show vacancy: {vacancy.Link}");
                 }
             }
+
+            await bot.SendTextMessageAsync(chatId, $"За вашим запитом знайдено вакансій: {vacancies.Count() - hiddenCount}");
         }
 
         private static InlineKeyboardButton[][] GetVacancyButton(string vacancyLink)

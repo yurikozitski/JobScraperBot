@@ -140,22 +140,17 @@ namespace JobScraperBot.Services.Implementations
 
         private async Task SendVacanciesAsync(string token, SubscriptionInfo subscriptionInfo, CancellationToken cancellationToken)
         {
-            try
-            {
-                var vacancies = await this.vacancyService.GetVacanciesAsync(
-                    new TelegramBotClient(token, this.httpClientFactory.CreateClient(), cancellationToken),
-                    subscriptionInfo.ChatId,
-                    subscriptionInfo.UserSettings);
+            var vacancies = await this.vacancyService.GetVacanciesAsync(
+                new TelegramBotClient(token, this.httpClientFactory.CreateClient(), cancellationToken),
+                subscriptionInfo.ChatId,
+                subscriptionInfo.UserSettings);
 
-                await this.vacancyService.ShowVacanciesAsync(
-                    new TelegramBotClient(token, this.httpClientFactory.CreateClient(), cancellationToken),
-                    subscriptionInfo.ChatId,
-                    vacancies);
-            }
-            finally
-            {
-                await UpdateLastSentDateAsync(subscriptionInfo);
-            }
+            await this.vacancyService.ShowVacanciesAsync(
+                new TelegramBotClient(token, this.httpClientFactory.CreateClient(), cancellationToken),
+                subscriptionInfo.ChatId,
+                vacancies);
+
+            await UpdateLastSentDateAsync(subscriptionInfo);
         }
 
 #pragma warning disable SA1204 // Static elements should appear before instance elements
