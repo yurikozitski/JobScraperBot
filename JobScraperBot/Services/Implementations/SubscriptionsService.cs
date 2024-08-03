@@ -10,6 +10,8 @@ namespace JobScraperBot.Services.Implementations
 {
     public class SubscriptionsService : ISubscriptionsService
     {
+        private static readonly string Path = Directory.GetCurrentDirectory() + "\\Subscriptions";
+
         private readonly IUserSubscriptionsStorage subscriptionsStorage;
         private readonly IVacancyService vacancyService;
         private readonly IConfiguration configuration;
@@ -30,19 +32,18 @@ namespace JobScraperBot.Services.Implementations
             this.logger = logger;
         }
 
+        public async Task StartUpLoadAsync() => await this.LoadSubscriptionsAsync(Path);
+
         public Task ReadFromFilesAsync(CancellationToken token)
         {
             return Task.Run(async () =>
             {
-                string path = Directory.GetCurrentDirectory() + "\\Subscriptions";
-                using var watcher = new FileSystemWatcher(path);
-
-                await this.LoadSubscriptionsAsync(path);
+                using var watcher = new FileSystemWatcher(Path);
 
                 watcher.EnableRaisingEvents = true;
 
-                watcher.Changed += async (o, e) => await this.LoadSubscriptionsAsync(path);
-                watcher.Created += async (o, e) => await this.LoadSubscriptionsAsync(path);
+                watcher.Changed += async (o, e) => await this.LoadSubscriptionsAsync(Path);
+                watcher.Created += async (o, e) => await this.LoadSubscriptionsAsync(Path);
 
                 while (!token.IsCancellationRequested)
                 {
@@ -94,7 +95,7 @@ namespace JobScraperBot.Services.Implementations
                         string subscription = await File.ReadAllTextAsync(filePath);
                         string[] subscriptionParams = subscription.Split(',');
 
-                        string chatIdStr = Path.GetFileName(filePath).Split('_')[0].Trim();
+                        string chatIdStr = System.IO.Path.GetFileName(filePath).Split('_')[0].Trim();
                         string intervalStr = subscriptionParams[0].Trim();
                         string timeStr = subscriptionParams[1].Trim();
 
@@ -160,7 +161,7 @@ namespace JobScraperBot.Services.Implementations
 #pragma warning disable SA1204 // Static elements should appear before instance elements
         private static async Task UpdateLastSentDateAsync(SubscriptionInfo subscriptionInfo)
         {
-            string path = Directory.GetCurrentDirectory() + "\\Subscriptions" + $"\\{subscriptionInfo.ChatId}_subscription.txt";
+            string path = Path + $"\\{subscriptionInfo.ChatId}_subscription.txt";
             string subscription = await File.ReadAllTextAsync(path);
             string[] subscriptionParams = subscription.Split(',');
             int dayIncrement = subscriptionInfo.MessageInterval switch

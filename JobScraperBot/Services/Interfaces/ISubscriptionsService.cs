@@ -8,6 +8,8 @@ namespace JobScraperBot.Services.Interfaces
 {
     public interface ISubscriptionsService
     {
+        Task StartUpLoadAsync();
+
         Task ReadFromFilesAsync(CancellationToken token);
 
         Task SendMessagesAsync(CancellationToken token);

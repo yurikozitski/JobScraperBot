@@ -5,5 +5,7 @@ namespace JobScraperBot.Services.Interfaces
     public interface IUserStateService
     {
         void UpdateUserSettings(long chatId, Update update);
+
+        Task LoadUserSettings();
     }
 }
