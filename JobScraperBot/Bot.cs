@@ -10,6 +10,7 @@ namespace JobScraperBot
 #pragma warning disable SA1501 // Statement should not be on a single line
 #pragma warning disable S108 // Nested blocks of code should not be left empty
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
 {
     public class Bot
     {
@@ -42,6 +43,7 @@ namespace JobScraperBot
             await userStateService!.LoadUserSettings();
             subscriptionService.ReadFromFilesAsync(cts.Token);
             subscriptionService.SendMessagesAsync(cts.Token);
+
             Console.WriteLine($"@{me?.Username ?? "jobgatherer_bot"} is running... Press Enter to terminate");
 
             Console.ReadLine();
