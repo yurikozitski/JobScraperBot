@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <Reference Include="JobsScraper.BLL">
-      <HintPath>..\..\JobsScraper\JobsScraper\JobsScraper.PL\bin\Release\net8.0\publish\JobsScraper.BLL.dll</HintPath>
+      <HintPath>Assemblies\JobsScraper.BLL.dll</HintPath>
     </Reference>
   </ItemGroup>
 

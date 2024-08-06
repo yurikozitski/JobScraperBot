@@ -37,12 +37,12 @@ namespace JobScraperBot.Services.Implementations
             }
             catch (HttpRequestException ex)
             {
-                await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
+                //await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
                 throw new VacancyLoadException(ex.Message, requestString);
             }
             catch (Exception ex)
             {
-                await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
+                //await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
                 throw new VacancyLoadException(ex.Message, requestString);
             }
 
