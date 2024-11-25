@@ -1,6 +1,6 @@
 ﻿namespace JobScraperBot.DAL.Entities
 {
-    public class MessageInterval : BaseEntity
+    public class MessageIntervalEntity : BaseEntity
     {
         public string Interval { get; set; } = default!;
 

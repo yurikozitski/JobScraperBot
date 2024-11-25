@@ -2,7 +2,7 @@
 {
     public class JobKind : BaseEntity
     {
-        public string TypeName { get; set; } = default!;
+        public string KindName { get; set; } = default!;
 
         public ICollection<SubscriptionSettings> SubscriptionSettings { get; set; } = new List<SubscriptionSettings>();
     }

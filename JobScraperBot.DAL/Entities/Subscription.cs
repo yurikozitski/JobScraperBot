@@ -8,10 +8,10 @@
 
         public Guid MessageIntervalId { get; set; }
 
-        public MessageInterval MessageInterval { get; set; } = default!;
+        public MessageIntervalEntity MessageInterval { get; set; } = default!;
 
         public TimeOnly Time { get; set; }
 
-        public DateTime NextUpdate { get; set; }
+        public DateOnly NextUpdate { get; set; }
     }
 }

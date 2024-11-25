@@ -1,6 +1,10 @@
-﻿using JobScraperBot.Services;
+﻿using JobScraperBot.DAL;
+using JobScraperBot.DAL.Interfaces;
+using JobScraperBot.DAL.Repositories;
+using JobScraperBot.Services;
 using JobScraperBot.Services.Implementations;
 using JobScraperBot.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,7 +22,10 @@ namespace JobScraperBot.Extensions
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
-            return services.AddSingleton<IUserStateStorage, UserStateStorage>()
+            return services
+                    .AddDbContext<JobScraperBotContext>(options =>
+                        options.UseSqlServer(configuration.GetConnectionString("LocalDb")))
+                    .AddSingleton<IUserStateStorage, UserStateStorage>()
                     .AddSingleton<IUserStateService, UserStateService>()
                     .AddSingleton<IResponseMessageService, ResponseMessageService>()
                     .AddSingleton<IResponseKeyboardService, ResponseKeyboardService>()
@@ -34,6 +41,7 @@ namespace JobScraperBot.Extensions
                     .AddTransient<IRequestStringService, RequestStringServive>()
                     .AddTransient<IVacancyService, VacancyService>()
                     .AddTransient<IUpdateHandler, UpdateHandler>()
+                    .AddTransient<ISubscriptionRepository, SubscriptionDbRepository>()
                     .AddTransient<IConfiguration>(_ => configuration)
                     .AddLogging(loggingBuilder =>
                     {

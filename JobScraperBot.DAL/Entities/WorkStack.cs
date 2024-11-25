@@ -1,6 +1,6 @@
 ﻿namespace JobScraperBot.DAL.Entities
 {
-    public class Stack : BaseEntity
+    public class WorkStack : BaseEntity
     {
         public string StackName { get; set; } = default!;
 

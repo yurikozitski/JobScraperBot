@@ -6,10 +6,10 @@
 
         public Subscription Subscription { get; set; } = default!;
 
-        public Stack Stack { get; set; } = default!;
+        public WorkStack Stack { get; set; } = default!;
 
         public Grade Grade { get; set; } = default!;
 
-        public JobKind? Type { get; set; }
+        public JobKind? JobKind { get; set; }
     }
 }
