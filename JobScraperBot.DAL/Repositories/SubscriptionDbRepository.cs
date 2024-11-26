@@ -6,21 +6,23 @@ namespace JobScraperBot.DAL.Repositories
 {
     public class SubscriptionDbRepository : ISubscriptionRepository
     {
-        private readonly JobScraperBotContext context;
+        private readonly IDbContextFactory<JobScraperBotContext> contextFactory;
 
-        public SubscriptionDbRepository(JobScraperBotContext context)
+        public SubscriptionDbRepository(IDbContextFactory<JobScraperBotContext> contextFactory)
         {
-            this.context = context;
+            this.contextFactory = contextFactory;
         }
 
         public async Task AddAsync(Subscription entity)
         {
-            var workStack = await this.context.Stacks.FirstOrDefaultAsync(x => x.StackName == entity.SubscriptionSettings.Stack.StackName);
-            var grade = await this.context.Grades.FirstOrDefaultAsync(x => x.GradeName == entity.SubscriptionSettings.Grade.GradeName);
+            using var context = await this.contextFactory.CreateDbContextAsync();
+
+            var workStack = await context.Stacks.FirstOrDefaultAsync(x => x.StackName == entity.SubscriptionSettings.Stack.StackName);
+            var grade = await context.Grades.FirstOrDefaultAsync(x => x.GradeName == entity.SubscriptionSettings.Grade.GradeName);
             var jobKind = 
                 entity.SubscriptionSettings.JobKind != null ? 
-                await this.context.JobKinds.FirstOrDefaultAsync(x => x.KindName == entity.SubscriptionSettings.JobKind.KindName) : null;
-            var mesInt = await this.context.MessageIntervals.FirstOrDefaultAsync(x => x.Interval == entity.MessageInterval.Interval);
+                await context.JobKinds.FirstOrDefaultAsync(x => x.KindName == entity.SubscriptionSettings.JobKind.KindName) : null;
+            var mesInt = await context.MessageIntervals.FirstOrDefaultAsync(x => x.Interval == entity.MessageInterval.Interval);
 
             entity.SubscriptionSettings.Stack = workStack!;
             entity.SubscriptionSettings.Grade = grade!;

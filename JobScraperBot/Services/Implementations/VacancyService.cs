@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using JobScraperBot.DAL.Interfaces;
 using JobScraperBot.Exceptions;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
@@ -13,15 +14,18 @@ namespace JobScraperBot.Services.Implementations
     {
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IRequestStringService requestStringService;
+        private readonly IHiddenVacancyRepository hiddenVacancyRepository;
         private readonly ILogger<VacancyService> logger;
 
         public VacancyService(
             IRequestStringService requestStringService,
             IHttpClientFactory httpClientFactory,
+            IHiddenVacancyRepository hiddenVacancyRepository,
             ILogger<VacancyService> logger)
         {
             this.requestStringService = requestStringService;
             this.httpClientFactory = httpClientFactory;
+            this.hiddenVacancyRepository = hiddenVacancyRepository;
             this.logger = logger;
         }
 
@@ -31,23 +35,23 @@ namespace JobScraperBot.Services.Implementations
 
             string? response = default;
 
-            try
-            {
-                response = await this.httpClientFactory.CreateClient().GetStringAsync(requestString);
-            }
-            catch (HttpRequestException ex)
-            {
-                await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
-                throw new VacancyLoadException(ex.Message, requestString);
-            }
-            catch (Exception ex)
-            {
-                await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
-                throw new VacancyLoadException(ex.Message, requestString);
-            }
+            //try
+            //{
+            //    response = await this.httpClientFactory.CreateClient().GetStringAsync(requestString);
+            //}
+            //catch (HttpRequestException ex)
+            //{
+            //    await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
+            //    throw new VacancyLoadException(ex.Message, requestString);
+            //}
+            //catch (Exception ex)
+            //{
+            //    await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
+            //    throw new VacancyLoadException(ex.Message, requestString);
+            //}
 
-            //using StreamReader r = new StreamReader("testData.json");
-            //response = r.ReadToEnd();
+            using StreamReader r = new StreamReader("testData.json");
+            response = r.ReadToEnd();
 
             var options = new JsonSerializerOptions
             {
@@ -66,7 +70,7 @@ namespace JobScraperBot.Services.Implementations
                 return;
             }
 
-            var hiddenVacanciesLinks = await GetHiddenVacanciesLinksAsync(chatId);
+            var hiddenVacanciesLinks = await this.GetHiddenVacanciesLinksAsync(chatId);
             int hiddenCount = 0;
 
             foreach (var vacancy in vacancies)
@@ -124,17 +128,25 @@ namespace JobScraperBot.Services.Implementations
             return link.Substring(link.Length - 64);
         }
 
-        private static async Task<string[]?> GetHiddenVacanciesLinksAsync(long chatId)
+        private async Task<string[]?> GetHiddenVacanciesLinksAsync(long chatId)
         {
-            string[]? fileArray = null;
-            string path = Directory.GetCurrentDirectory() + "\\HiddenVacancies" + $"\\{chatId}_hidden.txt";
+            var hiddenVac = await this.hiddenVacancyRepository.GetByChatIdAsync(chatId);
+            var hiddenVacLinks = hiddenVac.Select(x => x.Link).ToArray();
 
-            if (System.IO.File.Exists(path))
-            {
-                fileArray = await System.IO.File.ReadAllLinesAsync(path);
-            }
-
-            return fileArray;
+            return hiddenVacLinks;
         }
+
+        //private static async Task<string[]?> GetHiddenVacanciesLinksAsync(long chatId)
+        //{
+        //    string[]? fileArray = null;
+        //    string path = Directory.GetCurrentDirectory() + "\\HiddenVacancies" + $"\\{chatId}_hidden.txt";
+
+        //    if (System.IO.File.Exists(path))
+        //    {
+        //        fileArray = await System.IO.File.ReadAllLinesAsync(path);
+        //    }
+
+        //    return fileArray;
+        //}
     }
 }

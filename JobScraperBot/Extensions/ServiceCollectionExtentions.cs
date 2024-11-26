@@ -25,6 +25,7 @@ namespace JobScraperBot.Extensions
             return services
                     .AddDbContext<JobScraperBotContext>(options =>
                         options.UseSqlServer(configuration.GetConnectionString("LocalDb")))
+                    .AddDbContextFactory<JobScraperBotContext>()
                     .AddSingleton<IUserStateStorage, UserStateStorage>()
                     .AddSingleton<IUserStateService, UserStateService>()
                     .AddSingleton<IResponseMessageService, ResponseMessageService>()
@@ -42,6 +43,7 @@ namespace JobScraperBot.Extensions
                     .AddTransient<IVacancyService, VacancyService>()
                     .AddTransient<IUpdateHandler, UpdateHandler>()
                     .AddTransient<ISubscriptionRepository, SubscriptionDbRepository>()
+                    .AddTransient<IHiddenVacancyRepository, HiddenVacancyDbRepository>()
                     .AddTransient<IConfiguration>(_ => configuration)
                     .AddLogging(loggingBuilder =>
                     {

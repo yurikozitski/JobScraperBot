@@ -23,7 +23,7 @@ namespace JobScraperBot.DAL
 
         public JobScraperBotContext(DbContextOptions<JobScraperBotContext> options) : base(options)
         {
-            Database.EnsureDeleted();
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 

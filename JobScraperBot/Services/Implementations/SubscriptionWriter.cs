@@ -72,38 +72,11 @@ namespace JobScraperBot.Services.Implementations
             string interval = sbscrptnTextArr[0].Trim();
             string sbscrptnTextUtc = interval + "," + timeUtc.ToString("HH':'mm");
 
-            int dayIncrement;
-            string intervalEng;
-
-            switch (interval)
-            {
-                case string s when s.Equals("щодня", StringComparison.InvariantCulture):
-                    dayIncrement = 1;
-                    intervalEng = "daily";
-                    break;
-                case string s when s.Equals("через день", StringComparison.InvariantCulture):
-                    dayIncrement = 2;
-                    intervalEng = "once_in_two_days";
-                    break;
-                case string s when s.Equals("щотижня", StringComparison.InvariantCulture):
-                    dayIncrement = 7;
-                    intervalEng = "weekly";
-                    break;
-                default:
-                    throw new FormatException($"Can't convert string: {interval}");
-            }
-
-            string? jobType = userState.UserSettings.Type;
-
-            string? jobKind = jobType switch
-            {
-                null => null,
-                _ when jobType.Equals("В офісі", StringComparison.InvariantCulture) => "office",
-                _ when jobType.Equals("Віддалено", StringComparison.InvariantCulture) => "remote",
-                _ when jobType.Equals("Віддалено або в офісі", StringComparison.InvariantCulture) => "office_or_remote",
-                _ => null,
-            };
-
+            int dayIncrement = GetDayIncrement(interval);
+            string intervalEng = GetIntervalEng(interval);
+            string jobStack = GetStackName(userState.UserSettings.Stack);
+            string jobGrade = GetGradeName(userState.UserSettings.Grade);
+            string? jobKind = GetJobKind(userState.UserSettings.Type);
             var messagingDateOnly = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(dayIncrement));
 
             await this.subscriptionRepository.AddAsync(new Subscription()
@@ -113,11 +86,11 @@ namespace JobScraperBot.Services.Implementations
                 {
                     Stack = new WorkStack()
                     {
-                        StackName = userState.UserSettings.Stack,
+                        StackName = jobStack,
                     },
                     Grade = new Grade()
                     {
-                        GradeName = userState.UserSettings.Grade,
+                        GradeName = jobGrade,
                     },
                     JobKind = jobKind != null ? new JobKind() { KindName = jobKind } : null,
                 },
@@ -128,6 +101,77 @@ namespace JobScraperBot.Services.Implementations
                 Time = timeUtc,
                 NextUpdate = messagingDateOnly,
             });
+        }
+
+        private static int GetDayIncrement(string s)
+        {
+            int dayIncrement = s switch
+            {
+                _ when s.Equals("щодня", StringComparison.InvariantCulture) => 1,
+                _ when s.Equals("через день", StringComparison.InvariantCulture) => 2,
+                _ when s.Equals("щотижня", StringComparison.InvariantCulture) => 7,
+                _ => throw new FormatException($"Can't convert string: {s}")
+            };
+
+            return dayIncrement;
+        }
+
+        private static string GetIntervalEng(string s)
+        {
+            string intervalEng = s switch
+            {
+                _ when s.Equals("щодня", StringComparison.InvariantCulture) => "daily",
+                _ when s.Equals("через день", StringComparison.InvariantCulture) => "once_in_two_days",
+                _ when s.Equals("щотижня", StringComparison.InvariantCulture) => "weekly",
+                _ => throw new FormatException($"Can't convert string: {s}")
+            };
+
+            return intervalEng;
+        }
+
+        private static string GetStackName(string s)
+        {
+            string stackName = s switch
+            {
+                _ when s.Equals(".NET", StringComparison.InvariantCulture) => ".net",
+                _ when s.Equals("Front End", StringComparison.InvariantCulture) => "front_end",
+                _ when s.Equals("Java", StringComparison.InvariantCulture) => "java",
+                _ when s.Equals("Full Stack", StringComparison.InvariantCulture) => "full_stack",
+                _ when s.Equals("Python", StringComparison.InvariantCulture) => "python",
+                _ => throw new FormatException($"Can't convert string: {s}")
+            };
+
+            return stackName;
+        }
+
+        private static string GetGradeName(string s)
+        {
+            string gradeName = s switch
+            {
+                _ when s.Equals("Trainee/Intern", StringComparison.InvariantCulture) => "trainee_intern",
+                _ when s.Equals("Junior", StringComparison.InvariantCulture) => "junior",
+                _ when s.Equals("Middle", StringComparison.InvariantCulture) => "middle",
+                _ when s.Equals("Senior", StringComparison.InvariantCulture) => "senior",
+                _ when s.Equals("Team Lead", StringComparison.InvariantCulture) => "team_lead",
+                _ when s.Equals("Head/Chief", StringComparison.InvariantCulture) => "head_chief",
+                _ => throw new FormatException($"Can't convert string: {s}")
+            };
+
+            return gradeName;
+        }
+
+        private static string? GetJobKind(string? s)
+        {
+            string? jobKind = s switch
+            {
+                null => null,
+                _ when s.Equals("В офісі", StringComparison.InvariantCulture) => "office",
+                _ when s.Equals("Віддалено", StringComparison.InvariantCulture) => "remote",
+                _ when s.Equals("Віддалено або в офісі", StringComparison.InvariantCulture) => "office_or_remote",
+                _ => null,
+            };
+
+            return jobKind;
         }
     }
 }
