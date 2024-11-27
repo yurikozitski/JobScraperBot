@@ -33,7 +33,7 @@ namespace JobScraperBot
             User me = default!;
             try
             {
-                me = await bot.GetMeAsync();
+                me = await bot.GetMe();
             }
             catch { }
 
