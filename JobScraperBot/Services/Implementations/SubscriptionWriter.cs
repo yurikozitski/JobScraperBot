@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using AutoMapper;
 using JobScraperBot.DAL.Entities;
 using JobScraperBot.DAL.Interfaces;
 using JobScraperBot.Models;
@@ -10,48 +11,18 @@ namespace JobScraperBot.Services.Implementations
     public class SubscriptionWriter : ISubscriptionWriter
     {
         private readonly ISubscriptionRepository subscriptionRepository;
+        private readonly IUserSubscriptionsStorage subscriptionsStorage;
+        private readonly IMapper mapper;
 
-        public SubscriptionWriter(ISubscriptionRepository subscriptionRepository)
+        public SubscriptionWriter(
+            ISubscriptionRepository subscriptionRepository,
+            IMapper mapper,
+            IUserSubscriptionsStorage subscriptionsStorage)
         {
             this.subscriptionRepository = subscriptionRepository;
+            this.mapper = mapper;
+            this.subscriptionsStorage = subscriptionsStorage;
         }
-
-        //public async Task WriteSubscriptionAsync(long chatId, string sbscrptnText, IUserStateMachine userState)
-        //{
-        //    ArgumentNullException.ThrowIfNull(sbscrptnText);
-        //    ArgumentNullException.ThrowIfNull(userState);
-
-        //    if (userState.State != UserState.OnSubscriptionSetting)
-        //        return;
-
-        //    string path = Directory.GetCurrentDirectory() + "\\Subscriptions\\";
-
-        //    if (!Directory.Exists(path))
-        //        Directory.CreateDirectory(path);
-
-        //    string[] sbscrptnTextArr = sbscrptnText.Split(',');
-
-        //    TimeOnly time = TimeOnly.Parse(sbscrptnTextArr[1].Trim(), CultureInfo.InvariantCulture);
-        //    var timeDifference = (DateTime.UtcNow - DateTime.Now).Hours;
-        //    TimeOnly timeUtc = time.AddHours(timeDifference);
-
-        //    string interval = sbscrptnTextArr[0].Trim();
-        //    string sbscrptnTextUtc = interval + "," + timeUtc.ToString("HH':'mm");
-
-        //    int dayIncrement = interval switch
-        //    {
-        //        _ when interval.Equals("щодня", StringComparison.InvariantCulture) => 1,
-        //        _ when interval.Equals("через день", StringComparison.InvariantCulture) => 2,
-        //        _ when interval.Equals("щотижня", StringComparison.InvariantCulture) => 7,
-        //        _ => throw new FormatException($"Can't convert string: {interval}")
-        //    };
-
-        //    var messagingDateOnly = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(dayIncrement));
-
-        //    await System.IO.File.WriteAllTextAsync(
-        //        path + $"{chatId}_subscription.txt",
-        //        sbscrptnTextUtc + "," + userState.UserSettings + "," + messagingDateOnly.ToString(CultureInfo.InvariantCulture));
-        //}
 
         public async Task WriteSubscriptionAsync(long chatId, string sbscrptnText, IUserStateMachine userState)
         {
@@ -79,7 +50,7 @@ namespace JobScraperBot.Services.Implementations
             string? jobKind = GetJobKind(userState.UserSettings.Type);
             var messagingDateOnly = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(dayIncrement));
 
-            await this.subscriptionRepository.AddAsync(new Subscription()
+            var subscription = new Subscription()
             {
                 ChatId = chatId,
                 SubscriptionSettings = new SubscriptionSettings()
@@ -100,7 +71,17 @@ namespace JobScraperBot.Services.Implementations
                 },
                 Time = timeUtc,
                 NextUpdate = messagingDateOnly,
-            });
+            };
+
+            var subscriptionInfo = this.mapper.Map<Subscription, SubscriptionInfo>(subscription);
+
+            if (!this.subscriptionsStorage.Subscriptions.TryAdd(chatId, subscriptionInfo))
+            {
+                this.subscriptionsStorage.Subscriptions.Remove(chatId, out _);
+                this.subscriptionsStorage.Subscriptions.TryAdd(chatId, subscriptionInfo);
+            }
+
+            await this.subscriptionRepository.AddAsync(subscription);
         }
 
         private static int GetDayIncrement(string s)

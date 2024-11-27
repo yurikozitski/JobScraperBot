@@ -29,7 +29,7 @@ namespace JobScraperBot.Services.Implementations
             {
                 this.hiddenVacancyRepository.Delete(hiddenVacancy);
 
-                await botClient.EditMessageReplyMarkupAsync(
+                await botClient.EditMessageReplyMarkup(
                     update.CallbackQuery.Message!.Chat.Id,
                     update.CallbackQuery.Message.MessageId,
                     replyMarkup: new InlineKeyboardMarkup(new InlineKeyboardButton[][]
@@ -48,7 +48,7 @@ namespace JobScraperBot.Services.Implementations
                     Link = update.CallbackQuery.Data,
                 });
 
-                await botClient.EditMessageReplyMarkupAsync(
+                await botClient.EditMessageReplyMarkup(
                     update.CallbackQuery.Message!.Chat.Id,
                     update.CallbackQuery.Message.MessageId,
                     replyMarkup: new InlineKeyboardMarkup(new InlineKeyboardButton[][]

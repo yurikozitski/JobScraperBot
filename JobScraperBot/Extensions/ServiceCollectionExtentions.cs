@@ -1,6 +1,8 @@
-﻿using JobScraperBot.DAL;
+﻿using AutoMapper;
+using JobScraperBot.DAL;
 using JobScraperBot.DAL.Interfaces;
 using JobScraperBot.DAL.Repositories;
+using JobScraperBot.Mapping;
 using JobScraperBot.Services;
 using JobScraperBot.Services.Implementations;
 using JobScraperBot.Services.Interfaces;
@@ -21,6 +23,13 @@ namespace JobScraperBot.Extensions
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
+
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new AutomapperProfile());
+            });
+
+            IMapper mapper = mapperConfig.CreateMapper();
 
             return services
                     .AddDbContext<JobScraperBotContext>(options =>
@@ -45,6 +54,7 @@ namespace JobScraperBot.Extensions
                     .AddTransient<ISubscriptionRepository, SubscriptionDbRepository>()
                     .AddTransient<IHiddenVacancyRepository, HiddenVacancyDbRepository>()
                     .AddTransient<IConfiguration>(_ => configuration)
+                    .AddSingleton(mapper)
                     .AddLogging(loggingBuilder =>
                     {
                         loggingBuilder.ClearProviders();
