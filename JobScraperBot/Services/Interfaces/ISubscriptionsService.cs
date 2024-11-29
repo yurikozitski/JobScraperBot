@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using JobScraperBot.DAL.Entities;
 
 namespace JobScraperBot.Services.Interfaces
 {
     public interface ISubscriptionsService
     {
-        Task StartUpLoadAsync();
+        Task<IEnumerable<Subscription>> LoadSubscriptionsFromDataSourceAsync();
 
-        Task ReadFromFilesAsync(CancellationToken token);
+        void LoadSubscriptionsIntoMemory(IEnumerable<Subscription> subscriptions);
 
         Task SendMessagesAsync(CancellationToken token);
     }

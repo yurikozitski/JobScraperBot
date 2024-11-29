@@ -47,7 +47,7 @@ namespace JobScraperBot
             Console.WriteLine($"@{me?.Username ?? "jobgatherer_bot"} is running... Press Enter to terminate");
 
             Console.ReadLine();
-            cts.Cancel();
+            await cts.CancelAsync();
         }
     }
 }

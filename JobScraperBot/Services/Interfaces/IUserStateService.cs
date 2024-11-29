@@ -1,4 +1,5 @@
-﻿using Telegram.Bot.Types;
+﻿using JobScraperBot.DAL.Entities;
+using Telegram.Bot.Types;
 
 namespace JobScraperBot.Services.Interfaces
 {
@@ -6,6 +7,6 @@ namespace JobScraperBot.Services.Interfaces
     {
         void UpdateUserSettings(long chatId, Update update);
 
-        Task LoadUserSettings();
+        void LoadUserSettingsIntoMemory(IEnumerable<Subscription> subscriptions);
     }
 }

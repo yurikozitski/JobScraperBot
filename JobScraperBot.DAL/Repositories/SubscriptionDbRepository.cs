@@ -38,6 +38,13 @@ namespace JobScraperBot.DAL.Repositories
             throw new NotImplementedException();
         }
 
+        public async Task DeleteByChatIdAsync(long chatId)
+        {
+            using var context = await this.contextFactory.CreateDbContextAsync();
+
+            await context.Subscriptions.Where(x => x.ChatId == chatId).ExecuteDeleteAsync();
+        }
+
         public Task DeleteByIdAsync(Guid id)
         {
             throw new NotImplementedException();
