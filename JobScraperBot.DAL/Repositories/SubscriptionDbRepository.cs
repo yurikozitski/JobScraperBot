@@ -33,9 +33,16 @@ namespace JobScraperBot.DAL.Repositories
             await context.SaveChangesAsync();
         }
 
-        public void Delete(Subscription entity)
+        public async Task<IEnumerable<Subscription>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            using var context = await this.contextFactory.CreateDbContextAsync();
+
+            return await context.Subscriptions
+                .Include(x => x.SubscriptionSettings.Stack)
+                .Include(x => x.SubscriptionSettings.Grade)
+                .Include(x => x.SubscriptionSettings.JobKind)
+                .Include(x => x.MessageInterval)
+                .ToListAsync();
         }
 
         public async Task DeleteByChatIdAsync(long chatId)
@@ -45,24 +52,12 @@ namespace JobScraperBot.DAL.Repositories
             await context.Subscriptions.Where(x => x.ChatId == chatId).ExecuteDeleteAsync();
         }
 
-        public Task DeleteByIdAsync(Guid id)
+        public async Task UpdateDateAsync(Subscription subscription)
         {
-            throw new NotImplementedException();
-        }
+            using var context = await this.contextFactory.CreateDbContextAsync();
 
-        public Task<IEnumerable<Subscription>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Subscription> GetByIdAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Update(Subscription entity)
-        {
-            throw new NotImplementedException();
+            await context.Subscriptions.Where(x => x.ChatId == subscription.ChatId).ExecuteUpdateAsync(
+                setters => setters.SetProperty(s => s.NextUpdate, subscription.NextUpdate));
         }
     }
 }

@@ -23,11 +23,19 @@ namespace JobScraperBot
 
         public async Task Run()
         {
+            var subscriptionService = this.serviceProvider.GetService<ISubscriptionsService>();
+            var userStateService = this.serviceProvider.GetService<IUserStateService>();
+
+            Console.WriteLine("Loading data...");
+
+            var subscriptions = await subscriptionService!.LoadSubscriptionsFromDataSourceAsync();
+            userStateService!.LoadUserSettingsIntoMemory(subscriptions);
+            subscriptionService.LoadSubscriptionsIntoMemory(subscriptions);
+
             var config = this.serviceProvider.GetService<IConfiguration>();
-
             using var cts = new CancellationTokenSource();
-            var bot = new TelegramBotClient(config!["botToken"]!, cancellationToken: cts.Token);
 
+            var bot = new TelegramBotClient(config!["botToken"]!, cancellationToken: cts.Token);
             bot.StartReceiving(this.serviceProvider.GetService<IUpdateHandler>()!.HandleUpdateAsync, this.serviceProvider.GetService<IUpdateHandler>()!.HandleErrorAsync);
 
             User me = default!;
@@ -37,11 +45,6 @@ namespace JobScraperBot
             }
             catch { }
 
-            var subscriptionService = this.serviceProvider.GetService<ISubscriptionsService>();
-            var userStateService = this.serviceProvider.GetService<IUserStateService>();
-            await subscriptionService!.StartUpLoadAsync();
-            await userStateService!.LoadUserSettings();
-            subscriptionService.ReadFromFilesAsync(cts.Token);
             subscriptionService.SendMessagesAsync(cts.Token);
 
             Console.WriteLine($"@{me?.Username ?? "jobgatherer_bot"} is running... Press Enter to terminate");

@@ -4,6 +4,8 @@ namespace JobScraperBot.DAL.Interfaces
 {
     public interface ISubscriptionRepository : IRepository<Subscription>
     {
-        Task DeleteByChatIdAsync(long chatId);
+        Task<IEnumerable<Subscription>> GetAllAsync();
+
+        Task UpdateDateAsync(Subscription subscription);
     }
 }

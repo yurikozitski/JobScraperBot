@@ -21,16 +21,16 @@ namespace JobScraperBot.DAL.Repositories
             await context.SaveChangesAsync();
         }
 
-        public void Delete(HiddenVacancy entity)
+        public async Task DeleteAsync(HiddenVacancy vacancy)
         {
-            using var context = this.contextFactory.CreateDbContext();
+            using var context = await this.contextFactory.CreateDbContextAsync();
 
-            var vacancy = context.HiddenVacancies.FirstOrDefault(x => x.ChatId == entity.ChatId && x.Link == entity.Link);
+            var hiddenVacancy = await context.HiddenVacancies.FirstOrDefaultAsync(x => x.ChatId == vacancy.ChatId && x.Link == vacancy.Link);
 
-            if (vacancy != null)
+            if (hiddenVacancy != null)
             {
-                context.Remove(vacancy);
-                context.SaveChanges();
+                context.Remove(hiddenVacancy);
+                await context.SaveChangesAsync();
             }
         }
 
@@ -41,32 +41,12 @@ namespace JobScraperBot.DAL.Repositories
             await context.HiddenVacancies.Where(x => x.ChatId == chatId).ExecuteDeleteAsync();
         }
 
-        public Task DeleteByIdAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<HiddenVacancy>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<IEnumerable<HiddenVacancy>> GetByChatIdAsync(long chatId)
         {
             using var context = await this.contextFactory.CreateDbContextAsync();
 
             var hiddenVac = await context.HiddenVacancies.Where(x => x.ChatId == chatId).ToListAsync();
             return hiddenVac;
-        }
-
-        public Task<HiddenVacancy> GetByIdAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Update(HiddenVacancy entity)
-        {
-            throw new NotImplementedException();
         }
     }
 }

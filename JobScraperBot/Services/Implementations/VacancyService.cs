@@ -135,18 +135,5 @@ namespace JobScraperBot.Services.Implementations
 
             return hiddenVacLinks;
         }
-
-        //private static async Task<string[]?> GetHiddenVacanciesLinksAsync(long chatId)
-        //{
-        //    string[]? fileArray = null;
-        //    string path = Directory.GetCurrentDirectory() + "\\HiddenVacancies" + $"\\{chatId}_hidden.txt";
-
-        //    if (System.IO.File.Exists(path))
-        //    {
-        //        fileArray = await System.IO.File.ReadAllLinesAsync(path);
-        //    }
-
-        //    return fileArray;
-        //}
     }
 }

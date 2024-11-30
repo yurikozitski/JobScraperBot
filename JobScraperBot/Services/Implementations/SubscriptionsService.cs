@@ -1,11 +1,8 @@
-﻿using System.Globalization;
-using System.IO;
-using AutoMapper;
+﻿using AutoMapper;
 using JobScraperBot.DAL.Entities;
 using JobScraperBot.DAL.Interfaces;
 using JobScraperBot.Models;
 using JobScraperBot.Services.Interfaces;
-using JobScraperBot.State;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -54,7 +51,7 @@ namespace JobScraperBot.Services.Implementations
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogError(ex, "Error occured while loading user states from data source");
+                    this.logger.LogError(ex, "Error occured while loading user data from data source");
                     await Task.Delay(60_000);
                 }
             }
@@ -74,8 +71,8 @@ namespace JobScraperBot.Services.Implementations
                 }
                 else
                 {
-                    this.subscriptionsStorage.Subscriptions.TryGetValue(subscriptionInfo.ChatId, out SubscriptionInfo? previousValue);
-                    this.subscriptionsStorage.Subscriptions.TryUpdate(subscriptionInfo.ChatId, subscriptionInfo, previousValue!);
+                    this.subscriptionsStorage.Subscriptions.Remove(subscriptionInfo.ChatId, out _);
+                    this.subscriptionsStorage.Subscriptions.TryAdd(subscriptionInfo.ChatId, subscriptionInfo);
                 }
             }
         }
@@ -124,15 +121,11 @@ namespace JobScraperBot.Services.Implementations
                 subscriptionInfo.ChatId,
                 vacancies);
 
-            await UpdateLastSentDateAsync(subscriptionInfo);
+            await this.UpdateLastSentDateAsync(subscriptionInfo);
         }
 
-#pragma warning disable SA1204 // Static elements should appear before instance elements
-        private static async Task UpdateLastSentDateAsync(SubscriptionInfo subscriptionInfo)
+        private async Task UpdateLastSentDateAsync(SubscriptionInfo subscriptionInfo)
         {
-            string path = Path + $"\\{subscriptionInfo.ChatId}_subscription.txt";
-            string subscription = await File.ReadAllTextAsync(path);
-            string[] subscriptionParams = subscription.Split(',');
             int dayIncrement = subscriptionInfo.MessageInterval switch
             {
                 MessageInterval.Daily => 1,
@@ -140,10 +133,28 @@ namespace JobScraperBot.Services.Implementations
                 MessageInterval.Weekly => 7,
                 _ => throw new ArgumentOutOfRangeException(nameof(subscriptionInfo), $"{subscriptionInfo.MessageInterval} is not valid"),
             };
-            subscriptionParams[subscriptionParams.Length - 1] = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(dayIncrement)).ToString(CultureInfo.InvariantCulture);
-            string newSubscription = string.Join(",", subscriptionParams);
 
-            await File.WriteAllTextAsync(path, newSubscription);
+            subscriptionInfo.NextUpdate = new DateTime(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(dayIncrement)), subscriptionInfo.Time, DateTimeKind.Utc);
+
+            var subscription = this.mapper.Map<SubscriptionInfo, Subscription>(subscriptionInfo);
+            bool connectionSuccesful = false;
+
+            while (!connectionSuccesful)
+            {
+                try
+                {
+                    await this.subscriptionRepository.UpdateDateAsync(subscription);
+                    connectionSuccesful = true;
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Error occured while updating subscription in database");
+                    await Task.Delay(60_000);
+                }
+            }
+
+            this.subscriptionsStorage.Subscriptions.Remove(subscriptionInfo.ChatId, out _);
+            this.subscriptionsStorage.Subscriptions.TryAdd(subscriptionInfo.ChatId, subscriptionInfo);
         }
     }
 }

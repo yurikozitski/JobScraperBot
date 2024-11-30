@@ -27,7 +27,7 @@ namespace JobScraperBot.Services.Implementations
 
             if (hiddenVacancy != null)
             {
-                this.hiddenVacancyRepository.Delete(hiddenVacancy);
+                await this.hiddenVacancyRepository.DeleteAsync(hiddenVacancy);
 
                 await botClient.EditMessageReplyMarkup(
                     update.CallbackQuery.Message!.Chat.Id,

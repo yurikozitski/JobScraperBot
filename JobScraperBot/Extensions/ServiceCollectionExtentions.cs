@@ -33,7 +33,7 @@ namespace JobScraperBot.Extensions
 
             return services
                     .AddDbContext<JobScraperBotContext>(options =>
-                        options.UseSqlServer(configuration.GetConnectionString("LocalDb")))
+                        options.UseSqlServer(configuration.GetConnectionString("RemoteDb")))
                     .AddDbContextFactory<JobScraperBotContext>()
                     .AddSingleton<IUserStateStorage, UserStateStorage>()
                     .AddSingleton<IUserStateService, UserStateService>()
@@ -48,12 +48,12 @@ namespace JobScraperBot.Extensions
                     .AddSingleton<IUserSubscriptionsStorage, UserSubscriptionsStorage>()
                     .AddSingleton<ISubscriptionsService, SubscriptionsService>()
                     .AddSingleton<IFileRemover, FileRemover>()
-                    .AddTransient<IRequestStringService, RequestStringServive>()
-                    .AddTransient<IVacancyService, VacancyService>()
-                    .AddTransient<IUpdateHandler, UpdateHandler>()
-                    .AddTransient<ISubscriptionRepository, SubscriptionDbRepository>()
-                    .AddTransient<IHiddenVacancyRepository, HiddenVacancyDbRepository>()
-                    .AddTransient<IConfiguration>(_ => configuration)
+                    .AddSingleton<IRequestStringService, RequestStringServive>()
+                    .AddSingleton<IVacancyService, VacancyService>()
+                    .AddSingleton<IUpdateHandler, UpdateHandler>()
+                    .AddSingleton<ISubscriptionRepository, SubscriptionDbRepository>()
+                    .AddSingleton<IHiddenVacancyRepository, HiddenVacancyDbRepository>()
+                    .AddSingleton<IConfiguration>(_ => configuration)
                     .AddSingleton(mapper)
                     .AddLogging(loggingBuilder =>
                     {

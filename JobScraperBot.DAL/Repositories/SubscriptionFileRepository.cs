@@ -33,27 +33,17 @@ namespace JobScraperBot.DAL.Repositories
                + "," + entity.NextUpdate.ToString(CultureInfo.InvariantCulture));
         }
 
-        public void Delete(Subscription entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteByIdAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<IEnumerable<Subscription>> GetAllAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<Subscription> GetByIdAsync(Guid id)
+        public Task DeleteByChatIdAsync(long chatId)
         {
             throw new NotImplementedException();
         }
 
-        public void Update(Subscription entity)
+        public Task UpdateDateAsync(Subscription subscription)
         {
             throw new NotImplementedException();
         }

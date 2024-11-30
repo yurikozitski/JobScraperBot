@@ -4,8 +4,8 @@ namespace JobScraperBot.DAL.Interfaces
 {
     public interface IHiddenVacancyRepository : IRepository<HiddenVacancy>
     {
-        Task<IEnumerable<HiddenVacancy>> GetByChatIdAsync(long chatId);
+        public Task DeleteAsync(HiddenVacancy vacancy);
 
-        Task DeleteByChatIdAsync(long chatId);
+        Task<IEnumerable<HiddenVacancy>> GetByChatIdAsync(long chatId);
     }
 }
