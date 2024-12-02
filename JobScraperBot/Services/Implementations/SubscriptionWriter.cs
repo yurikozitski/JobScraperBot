@@ -2,6 +2,7 @@
 using AutoMapper;
 using JobScraperBot.DAL.Entities;
 using JobScraperBot.DAL.Interfaces;
+using JobScraperBot.Exceptions;
 using JobScraperBot.Models;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
@@ -41,8 +42,6 @@ namespace JobScraperBot.Services.Implementations
             TimeOnly timeUtc = time.AddHours(timeDifference);
 
             string interval = sbscrptnTextArr[0].Trim();
-            string sbscrptnTextUtc = interval + "," + timeUtc.ToString("HH':'mm");
-
             int dayIncrement = GetDayIncrement(interval);
             string intervalEng = GetIntervalEng(interval);
             string jobStack = GetStackName(userState.UserSettings.Stack);
@@ -73,15 +72,22 @@ namespace JobScraperBot.Services.Implementations
                 NextUpdate = messagingDateOnly,
             };
 
-            var subscriptionInfo = this.mapper.Map<Subscription, SubscriptionInfo>(subscription);
-
-            if (!this.subscriptionsStorage.Subscriptions.TryAdd(chatId, subscriptionInfo))
+            try
             {
-                this.subscriptionsStorage.Subscriptions.Remove(chatId, out _);
-                this.subscriptionsStorage.Subscriptions.TryAdd(chatId, subscriptionInfo);
-            }
+                await this.subscriptionRepository.AddAsync(subscription);
 
-            await this.subscriptionRepository.AddAsync(subscription);
+                var subscriptionInfo = this.mapper.Map<Subscription, SubscriptionInfo>(subscription);
+
+                if (!this.subscriptionsStorage.Subscriptions.TryAdd(chatId, subscriptionInfo))
+                {
+                    this.subscriptionsStorage.Subscriptions.Remove(chatId, out _);
+                    this.subscriptionsStorage.Subscriptions.TryAdd(chatId, subscriptionInfo);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new FailedOperationException(chatId, ex.Message, ex);
+            }
         }
 
         private static int GetDayIncrement(string s)

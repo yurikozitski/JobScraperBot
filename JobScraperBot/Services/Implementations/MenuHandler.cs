@@ -1,4 +1,5 @@
 ﻿using JobScraperBot.DAL.Interfaces;
+using JobScraperBot.Exceptions;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 using Telegram.Bot;
@@ -29,11 +30,18 @@ namespace JobScraperBot.Services.Implementations
 
             if (message.Text == "/reset")
             {
-                currentUserState.Reset();
+                try
+                {
+                    await this.subscriptionRepository.DeleteByChatIdAsync(message.Chat.Id);
+                    await this.hiddenVacancyRepository.DeleteByChatIdAsync(message.Chat.Id);
 
-                this.subscriptionsStorage.Subscriptions.Remove(message.Chat.Id, out _);
-                await this.subscriptionRepository.DeleteByChatIdAsync(message.Chat.Id);
-                await this.hiddenVacancyRepository.DeleteByChatIdAsync(message.Chat.Id);
+                    this.subscriptionsStorage.Subscriptions.Remove(message.Chat.Id, out _);
+                    currentUserState.Reset();
+                }
+                catch (Exception ex)
+                {
+                    throw new FailedOperationException(message.Chat.Id, ex.Message, ex);
+                }
             }
 
             if (message.Text == "/confirm")
