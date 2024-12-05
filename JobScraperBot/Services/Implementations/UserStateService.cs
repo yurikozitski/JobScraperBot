@@ -1,4 +1,8 @@
-﻿using JobScraperBot.Services.Interfaces;
+﻿using AutoMapper;
+using JobScraperBot.DAL.Entities;
+using JobScraperBot.DAL.Interfaces;
+using JobScraperBot.Models;
+using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
@@ -8,12 +12,14 @@ namespace JobScraperBot.Services.Implementations
     public class UserStateService : IUserStateService
     {
         private readonly IUserStateStorage storage;
-        private readonly ILogger<UserStateService> logger;
+        private readonly IMapper mapper;
 
-        public UserStateService(IUserStateStorage storage, ILogger<UserStateService> logger)
+        public UserStateService(
+            IUserStateStorage storage,
+            IMapper mapper)
         {
             this.storage = storage;
-            this.logger = logger;
+            this.mapper = mapper;
         }
 
         public void UpdateUserSettings(long chatId, Update update)
@@ -46,39 +52,15 @@ namespace JobScraperBot.Services.Implementations
             }
         }
 
-        public async Task LoadUserSettings()
+        public void LoadUserSettingsIntoMemory(IEnumerable<Subscription> subscriptions)
         {
-            string path = Directory.GetCurrentDirectory() + "\\Subscriptions";
-
-            if (Directory.Exists(path))
+            foreach (var subscription in subscriptions)
             {
-                foreach (string filePath in Directory.EnumerateFiles(path, "*.txt"))
-                {
-                    try
-                    {
-                        string subscription = await System.IO.File.ReadAllTextAsync(filePath);
-                        string[] subscriptionParams = subscription.Split(',');
+                var userSettings = this.mapper.Map<Subscription, SubscriptionInfo>(subscription).UserSettings;
 
-                        string chatIdStr = System.IO.Path.GetFileName(filePath).Split('_')[0].Trim();
-                        long chatId = long.Parse(chatIdStr);
-
-                        UserSettings userSettings = new UserSettings()
-                        {
-                            Stack = subscriptionParams[2].Trim(),
-                            Grade = subscriptionParams[3].Trim(),
-                            Type = !string.IsNullOrWhiteSpace(subscriptionParams[4].Trim()) ? subscriptionParams[4].Trim() : null,
-                        };
-
-                        var userState = new UserStateMachine(userSettings);
-                        userState.SetState(UserState.OnEnd);
-
-                        this.storage.StateStorage.TryAdd(chatId, userState);
-                    }
-                    catch (Exception ex)
-                    {
-                        this.logger.LogError(ex, "Error occured while loading user state from files");
-                    }
-                }
+                var userState = new UserStateMachine(userSettings);
+                userState.SetState(UserState.OnEnd);
+                this.storage.StateStorage.TryAdd(subscription.ChatId, userState);
             }
         }
     }

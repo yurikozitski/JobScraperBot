@@ -1,6 +1,12 @@
-﻿using JobScraperBot.Services;
+﻿using AutoMapper;
+using JobScraperBot.DAL;
+using JobScraperBot.DAL.Interfaces;
+using JobScraperBot.DAL.Repositories;
+using JobScraperBot.Mapping;
+using JobScraperBot.Services;
 using JobScraperBot.Services.Implementations;
 using JobScraperBot.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,7 +24,18 @@ namespace JobScraperBot.Extensions
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
-            return services.AddSingleton<IUserStateStorage, UserStateStorage>()
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new AutomapperProfile());
+            });
+
+            IMapper mapper = mapperConfig.CreateMapper();
+
+            return services
+                    .AddDbContext<JobScraperBotContext>(options =>
+                        options.UseSqlServer(configuration.GetConnectionString("RemoteDb")))
+                    .AddDbContextFactory<JobScraperBotContext>()
+                    .AddSingleton<IUserStateStorage, UserStateStorage>()
                     .AddSingleton<IUserStateService, UserStateService>()
                     .AddSingleton<IResponseMessageService, ResponseMessageService>()
                     .AddSingleton<IResponseKeyboardService, ResponseKeyboardService>()
@@ -31,10 +48,13 @@ namespace JobScraperBot.Extensions
                     .AddSingleton<IUserSubscriptionsStorage, UserSubscriptionsStorage>()
                     .AddSingleton<ISubscriptionsService, SubscriptionsService>()
                     .AddSingleton<IFileRemover, FileRemover>()
-                    .AddTransient<IRequestStringService, RequestStringServive>()
-                    .AddTransient<IVacancyService, VacancyService>()
-                    .AddTransient<IUpdateHandler, UpdateHandler>()
-                    .AddTransient<IConfiguration>(_ => configuration)
+                    .AddSingleton<IRequestStringService, RequestStringServive>()
+                    .AddSingleton<IVacancyService, VacancyService>()
+                    .AddSingleton<IUpdateHandler, UpdateHandler>()
+                    .AddSingleton<ISubscriptionRepository, SubscriptionDbRepository>()
+                    .AddSingleton<IHiddenVacancyRepository, HiddenVacancyDbRepository>()
+                    .AddSingleton<IConfiguration>(_ => configuration)
+                    .AddSingleton(mapper)
                     .AddLogging(loggingBuilder =>
                     {
                         loggingBuilder.ClearProviders();

@@ -1,6 +1,9 @@
-﻿using JobScraperBot.Services.Implementations;
+﻿using JobScraperBot.DAL.Interfaces;
+using JobScraperBot.DAL.Repositories;
+using JobScraperBot.Services.Implementations;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
+using JobScraperBot.Tests.Helpers;
 using Moq;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -11,14 +14,12 @@ namespace JobScraperBot.Tests
     {
         private readonly Mock<ITelegramBotClient> botClientMock;
         private readonly Mock<IUserStateMachine> userStateMachineMock;
-        private readonly Mock<IFileRemover> fileRemoverMock;
         private readonly IUserSubscriptionsStorage userSubscriptionsStorage;
 
         public MenuHandlerTests()
         {
             this.botClientMock = new Mock<ITelegramBotClient>();
             this.userStateMachineMock = new Mock<IUserStateMachine>();
-            this.fileRemoverMock = new Mock<IFileRemover>();
             this.userSubscriptionsStorage = new UserSubscriptionsStorage();
         }
 
@@ -26,8 +27,12 @@ namespace JobScraperBot.Tests
         public async Task HandleMenuAsync_ResetCommand_ResetsUserState()
         {
             // Arrange
-            var message = new Message { Text = "/reset", Chat = new Chat { Id = 12345L } };
-            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+            var message = new Message { Text = "/reset", Chat = new Chat { Id = 578150968L } };
+
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
+
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
 
             // Act
             await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
@@ -40,10 +45,14 @@ namespace JobScraperBot.Tests
         public async Task HandleMenuAsync_ResetCommand_RemovesSubscriptionFromSubscriptionStorage()
         {
             // Arrange
-            long chatId = 12345L;
+            long chatId = 578150968L;
             var message = new Message { Text = "/reset", Chat = new Chat { Id = chatId } };
             this.userSubscriptionsStorage.Subscriptions.TryAdd(chatId, new Models.SubscriptionInfo(default, default!, default, default));
-            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
+
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
 
             // Act
             await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
@@ -53,43 +62,57 @@ namespace JobScraperBot.Tests
         }
 
         [Fact]
-        public async Task HandleMenuAsync_ResetCommand_RemovesFileWithHiddenVacancies()
+        public async Task HandleMenuAsync_ResetCommand_RemovesHiddenVacancies()
         {
             // Arrange
-            var message = new Message { Text = "/reset", Chat = new Chat { Id = 12345L } };
-            string path = Directory.GetCurrentDirectory() + "\\HiddenVacancies" + $"\\{message.Chat.Id}_hidden.txt";
-            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+            long chatId = 578150968L;
+            var message = new Message { Text = "/reset", Chat = new Chat { Id = chatId } };
+
+            using var contextFactory = new TestDbContextFactory();
+            var subscriptionRepo = new SubscriptionDbRepository(contextFactory);
+            var hiddenVacRepo = new HiddenVacancyDbRepository(contextFactory);
+
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subscriptionRepo, hiddenVacRepo);
 
             // Act
             await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
 
             // Assert
-            this.fileRemoverMock.Verify(x => x.RemoveFile(path), Times.Once);
+            Assert.Empty(contextFactory.CreateDbContext().HiddenVacancies.Where(x => x.ChatId == chatId));
         }
 
         [Fact]
-        public async Task HandleMenuAsync_ResetCommand_RemovesFileWithSubscription()
+        public async Task HandleMenuAsync_ResetCommand_RemovesSubscriptions()
         {
             // Arrange
-            var message = new Message { Text = "/reset", Chat = new Chat { Id = 12345L } };
-            string path = Directory.GetCurrentDirectory() + "\\Subscriptions" + $"\\{message.Chat.Id}_subscription.txt";
-            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+            long chatId = 578150968L;
+            var message = new Message { Text = "/reset", Chat = new Chat { Id = chatId } };
+
+            using var contextFactory = new TestDbContextFactory();
+            var subscriptionRepo = new SubscriptionDbRepository(contextFactory);
+            var hiddenVacRepo = new HiddenVacancyDbRepository(contextFactory);
+
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subscriptionRepo, hiddenVacRepo);
 
             // Act
             await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
 
             // Assert
-            this.fileRemoverMock.Verify(x => x.RemoveFile(path), Times.Once);
+            Assert.Empty(contextFactory.CreateDbContext().Subscriptions.Where(x => x.ChatId == chatId));
         }
 
         [Fact]
         public async Task HandleMenuAsync_ConfirmCommand_SetsUserStateToPreviousToResultChoosing()
         {
             // Arrange
-            var message = new Message { Text = "/confirm", Chat = new Chat { Id = 12345L } };
+            var message = new Message { Text = "/confirm", Chat = new Chat { Id = 578150968L } };
             var userStateMachine = new UserStateMachine(new UserSettings());
             userStateMachine.SetState(UserState.OnTypeChoosing);
-            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
+
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
 
             // Act
             await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, userStateMachine);
@@ -102,10 +125,14 @@ namespace JobScraperBot.Tests
         public async Task HandleMenuAsync_ConfirmCommand_SetsUserStateToPreviousState()
         {
             // Arrange
-            var message = new Message { Text = "/confirm", Chat = new Chat { Id = 12345L } };
+            var message = new Message { Text = "/confirm", Chat = new Chat { Id = 578150968L } };
             var userStateMachine = new UserStateMachine(new UserSettings());
             userStateMachine.SetState(UserState.OnGreeting);
-            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
+
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
 
             // Act
             await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, userStateMachine);
@@ -119,7 +146,11 @@ namespace JobScraperBot.Tests
         {
             // Arrange
             Message message = null!;
-            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
+
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
 
             // Act
             var result = menuHandler.HandleMenuAsync;
@@ -134,8 +165,12 @@ namespace JobScraperBot.Tests
         public async Task HandleMenuAsync_MessegeTextIsNullOrEmpty_ThrowsArgumentException(string messageText)
         {
             // Arrange
-            var message = new Message { Text = messageText, Chat = new Chat { Id = 12345L } };
-            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+            var message = new Message { Text = messageText, Chat = new Chat { Id = 578150968L } };
+
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
+
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
 
             // Act
             var result = menuHandler.HandleMenuAsync;

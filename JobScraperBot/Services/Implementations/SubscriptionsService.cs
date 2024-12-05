@@ -1,7 +1,8 @@
-﻿using System.Globalization;
+﻿using AutoMapper;
+using JobScraperBot.DAL.Entities;
+using JobScraperBot.DAL.Interfaces;
 using JobScraperBot.Models;
 using JobScraperBot.Services.Interfaces;
-using JobScraperBot.State;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -10,46 +11,70 @@ namespace JobScraperBot.Services.Implementations
 {
     public class SubscriptionsService : ISubscriptionsService
     {
-        private static readonly string Path = Directory.GetCurrentDirectory() + "\\Subscriptions";
-
         private readonly IUserSubscriptionsStorage subscriptionsStorage;
+        private readonly ISubscriptionRepository subscriptionRepository;
         private readonly IVacancyService vacancyService;
         private readonly IConfiguration configuration;
         private readonly IHttpClientFactory httpClientFactory;
+        private readonly IMapper mapper;
         private readonly ILogger<SubscriptionsService> logger;
 
         public SubscriptionsService(
             IUserSubscriptionsStorage subscriptionsStorage,
+            ISubscriptionRepository subscriptionsRepository,
             IVacancyService vacancyService,
             IConfiguration configuration,
             IHttpClientFactory httpClientFactory,
+            IMapper mapper,
             ILogger<SubscriptionsService> logger)
         {
             this.subscriptionsStorage = subscriptionsStorage;
+            this.subscriptionRepository = subscriptionsRepository;
             this.vacancyService = vacancyService;
             this.configuration = configuration;
             this.httpClientFactory = httpClientFactory;
+            this.mapper = mapper;
             this.logger = logger;
         }
 
-        public async Task StartUpLoadAsync() => await this.LoadSubscriptionsAsync(Path);
-
-        public Task ReadFromFilesAsync(CancellationToken token)
+        public async Task<IEnumerable<Subscription>> LoadSubscriptionsFromDataSourceAsync()
         {
-            return Task.Run(async () =>
+            bool connectionSuccesful = false;
+            IEnumerable<Subscription> subscriptions = default!;
+
+            while (!connectionSuccesful)
             {
-                using var watcher = new FileSystemWatcher(Path);
-
-                watcher.EnableRaisingEvents = true;
-
-                watcher.Changed += async (o, e) => await this.LoadSubscriptionsAsync(Path);
-                watcher.Created += async (o, e) => await this.LoadSubscriptionsAsync(Path);
-
-                while (!token.IsCancellationRequested)
+                try
                 {
-                    await Task.Delay(1000, token);
+                    subscriptions = await this.subscriptionRepository.GetAllAsync();
+                    connectionSuccesful = true;
                 }
-            });
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Error occured while loading user data from data source");
+                    await Task.Delay(60_000);
+                }
+            }
+
+            return subscriptions;
+        }
+
+        public void LoadSubscriptionsIntoMemory(IEnumerable<Subscription> subscriptions)
+        {
+            foreach (var subscription in subscriptions)
+            {
+                var subscriptionInfo = this.mapper.Map<Subscription, SubscriptionInfo>(subscription);
+
+                if (!this.subscriptionsStorage.Subscriptions.ContainsKey(subscriptionInfo.ChatId))
+                {
+                    this.subscriptionsStorage.Subscriptions.TryAdd(subscriptionInfo.ChatId, subscriptionInfo);
+                }
+                else
+                {
+                    this.subscriptionsStorage.Subscriptions.Remove(subscriptionInfo.ChatId, out _);
+                    this.subscriptionsStorage.Subscriptions.TryAdd(subscriptionInfo.ChatId, subscriptionInfo);
+                }
+            }
         }
 
         public Task SendMessagesAsync(CancellationToken token)
@@ -84,60 +109,6 @@ namespace JobScraperBot.Services.Implementations
             });
         }
 
-        private async Task LoadSubscriptionsAsync(string path)
-        {
-            if (Directory.Exists(path))
-            {
-                foreach (string filePath in Directory.EnumerateFiles(path, "*.txt"))
-                {
-                    try
-                    {
-                        string subscription = await File.ReadAllTextAsync(filePath);
-                        string[] subscriptionParams = subscription.Split(',');
-
-                        string chatIdStr = System.IO.Path.GetFileName(filePath).Split('_')[0].Trim();
-                        string intervalStr = subscriptionParams[0].Trim();
-                        string timeStr = subscriptionParams[1].Trim();
-
-                        long chatId = long.Parse(chatIdStr);
-                        MessageInterval messageInterval = intervalStr switch
-                        {
-                            _ when intervalStr.Equals("щодня", StringComparison.InvariantCulture) => MessageInterval.Daily,
-                            _ when intervalStr.Equals("через день", StringComparison.InvariantCulture) => MessageInterval.OnceInTwoDays,
-                            _ when intervalStr.Equals("щотижня", StringComparison.InvariantCulture) => MessageInterval.Weekly,
-                            _ => throw new FormatException($"Can't convert string: {intervalStr}")
-                        };
-                        TimeOnly time = TimeOnly.Parse(timeStr, CultureInfo.InvariantCulture);
-                        UserSettings userSettings = new UserSettings()
-                        {
-                            Stack = subscriptionParams[2].Trim(),
-                            Grade = subscriptionParams[3].Trim(),
-                            Type = subscriptionParams[4].Trim(),
-                        };
-
-                        var subscriptionInfo = new SubscriptionInfo(chatId, userSettings, messageInterval, time)
-                        {
-                            NextUpdate = new DateTime(DateOnly.Parse(subscriptionParams[5].Trim(), CultureInfo.InvariantCulture), time, DateTimeKind.Utc),
-                        };
-
-                        if (!this.subscriptionsStorage.Subscriptions.ContainsKey(chatId))
-                        {
-                            this.subscriptionsStorage.Subscriptions.TryAdd(chatId, subscriptionInfo);
-                        }
-                        else
-                        {
-                            this.subscriptionsStorage.Subscriptions.TryGetValue(chatId, out SubscriptionInfo? previousValue);
-                            this.subscriptionsStorage.Subscriptions.TryUpdate(chatId, subscriptionInfo, previousValue!);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        this.logger.LogError(ex, "Error occured while loading subscriptions from files");
-                    }
-                }
-            }
-        }
-
         private async Task SendVacanciesAsync(string token, SubscriptionInfo subscriptionInfo, CancellationToken cancellationToken)
         {
             var vacancies = await this.vacancyService.GetVacanciesAsync(
@@ -150,15 +121,11 @@ namespace JobScraperBot.Services.Implementations
                 subscriptionInfo.ChatId,
                 vacancies);
 
-            await UpdateLastSentDateAsync(subscriptionInfo);
+            await this.UpdateLastSentDateAsync(subscriptionInfo);
         }
 
-#pragma warning disable SA1204 // Static elements should appear before instance elements
-        private static async Task UpdateLastSentDateAsync(SubscriptionInfo subscriptionInfo)
+        private async Task UpdateLastSentDateAsync(SubscriptionInfo subscriptionInfo)
         {
-            string path = Path + $"\\{subscriptionInfo.ChatId}_subscription.txt";
-            string subscription = await File.ReadAllTextAsync(path);
-            string[] subscriptionParams = subscription.Split(',');
             int dayIncrement = subscriptionInfo.MessageInterval switch
             {
                 MessageInterval.Daily => 1,
@@ -166,10 +133,28 @@ namespace JobScraperBot.Services.Implementations
                 MessageInterval.Weekly => 7,
                 _ => throw new ArgumentOutOfRangeException(nameof(subscriptionInfo), $"{subscriptionInfo.MessageInterval} is not valid"),
             };
-            subscriptionParams[subscriptionParams.Length - 1] = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(dayIncrement)).ToString(CultureInfo.InvariantCulture);
-            string newSubscription = string.Join(",", subscriptionParams);
 
-            await File.WriteAllTextAsync(path, newSubscription);
+            subscriptionInfo.NextUpdate = new DateTime(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(dayIncrement)), subscriptionInfo.Time, DateTimeKind.Utc);
+
+            var subscription = this.mapper.Map<SubscriptionInfo, Subscription>(subscriptionInfo);
+            bool connectionSuccesful = false;
+
+            while (!connectionSuccesful)
+            {
+                try
+                {
+                    await this.subscriptionRepository.UpdateDateAsync(subscription);
+                    connectionSuccesful = true;
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex, "Error occured while updating subscription in database");
+                    await Task.Delay(60_000);
+                }
+            }
+
+            this.subscriptionsStorage.Subscriptions.Remove(subscriptionInfo.ChatId, out _);
+            this.subscriptionsStorage.Subscriptions.TryAdd(subscriptionInfo.ChatId, subscriptionInfo);
         }
     }
 }

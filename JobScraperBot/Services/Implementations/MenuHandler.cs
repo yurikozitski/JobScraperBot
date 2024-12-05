@@ -1,4 +1,6 @@
-﻿using JobScraperBot.Services.Interfaces;
+﻿using JobScraperBot.DAL.Interfaces;
+using JobScraperBot.Exceptions;
+using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -8,14 +10,17 @@ namespace JobScraperBot.Services.Implementations
     public class MenuHandler : IMenuHandler
     {
         private readonly IUserSubscriptionsStorage subscriptionsStorage;
-        private readonly IFileRemover fileRemover;
+        private readonly ISubscriptionRepository subscriptionRepository;
+        private readonly IHiddenVacancyRepository hiddenVacancyRepository;
 
         public MenuHandler(
             IUserSubscriptionsStorage userSubscriptionsStorage,
-            IFileRemover fileRemover)
+            ISubscriptionRepository subscriptionRepository,
+            IHiddenVacancyRepository hiddenVacancyRepository)
         {
             this.subscriptionsStorage = userSubscriptionsStorage;
-            this.fileRemover = fileRemover;
+            this.subscriptionRepository = subscriptionRepository;
+            this.hiddenVacancyRepository = hiddenVacancyRepository;
         }
 
         public async Task HandleMenuAsync(ITelegramBotClient botClient, Message message, IUserStateMachine currentUserState)
@@ -25,18 +30,18 @@ namespace JobScraperBot.Services.Implementations
 
             if (message.Text == "/reset")
             {
-                currentUserState.Reset();
+                try
+                {
+                    await this.subscriptionRepository.DeleteByChatIdAsync(message.Chat.Id);
+                    await this.hiddenVacancyRepository.DeleteByChatIdAsync(message.Chat.Id);
 
-                this.subscriptionsStorage.Subscriptions.Remove(message.Chat.Id, out _);
-
-                string subPathHidden = Directory.GetCurrentDirectory() + "\\HiddenVacancies";
-                string subPathSbcscr = Directory.GetCurrentDirectory() + "\\Subscriptions";
-
-                string pathHidden = subPathHidden + $"\\{message.Chat.Id}_hidden.txt";
-                string pathSbcscr = subPathSbcscr + $"\\{message.Chat.Id}_subscription.txt";
-
-                this.fileRemover.RemoveFile(pathHidden);
-                this.fileRemover.RemoveFile(pathSbcscr);
+                    this.subscriptionsStorage.Subscriptions.Remove(message.Chat.Id, out _);
+                    currentUserState.Reset();
+                }
+                catch (Exception ex)
+                {
+                    throw new FailedOperationException(message.Chat.Id, ex.Message, ex);
+                }
             }
 
             if (message.Text == "/confirm")
@@ -47,7 +52,7 @@ namespace JobScraperBot.Services.Implementations
                 }
                 else
                 {
-                    await botClient.SendTextMessageAsync(message.Chat.Id, "Ви ще не можете завершити налаштування, треба вибрати хоча б стек та рівень");
+                    await botClient.SendMessage(message.Chat.Id, "Ви ще не можете завершити налаштування, треба вибрати хоча б стек та рівень");
                     var currentState = currentUserState.State;
                     currentUserState.SetState(--currentState);
                 }

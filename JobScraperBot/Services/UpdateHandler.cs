@@ -1,4 +1,5 @@
-﻿using JobScraperBot.Services.Interfaces;
+﻿using JobScraperBot.Exceptions;
+using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -55,6 +56,12 @@ namespace JobScraperBot.Services
             if (exception is not RequestException)
             {
                 this.logger.LogError(exception, "Exeption occured");
+            }
+
+            if (exception is FailedOperationException operationException)
+            {
+                this.logger.LogError(operationException, $"Can't update data in data sourse");
+                await botClient.SendMessage(operationException.ChatId, "Невдалося виконати операцію");
             }
         }
 
