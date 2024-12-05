@@ -1,147 +1,182 @@
-﻿//using JobScraperBot.Services.Implementations;
-//using JobScraperBot.Services.Interfaces;
-//using JobScraperBot.State;
-//using Moq;
-//using Telegram.Bot;
-//using Telegram.Bot.Types;
+﻿using JobScraperBot.DAL.Interfaces;
+using JobScraperBot.DAL.Repositories;
+using JobScraperBot.Services.Implementations;
+using JobScraperBot.Services.Interfaces;
+using JobScraperBot.State;
+using JobScraperBot.Tests.Helpers;
+using Moq;
+using Telegram.Bot;
+using Telegram.Bot.Types;
 
-//namespace JobScraperBot.Tests
-//{
-//    public class MenuHandlerTests
-//    {
-//        private readonly Mock<ITelegramBotClient> botClientMock;
-//        private readonly Mock<IUserStateMachine> userStateMachineMock;
-//        private readonly Mock<IFileRemover> fileRemoverMock;
-//        private readonly IUserSubscriptionsStorage userSubscriptionsStorage;
+namespace JobScraperBot.Tests
+{
+    public class MenuHandlerTests
+    {
+        private readonly Mock<ITelegramBotClient> botClientMock;
+        private readonly Mock<IUserStateMachine> userStateMachineMock;
+        private readonly IUserSubscriptionsStorage userSubscriptionsStorage;
 
-//        public MenuHandlerTests()
-//        {
-//            this.botClientMock = new Mock<ITelegramBotClient>();
-//            this.userStateMachineMock = new Mock<IUserStateMachine>();
-//            this.fileRemoverMock = new Mock<IFileRemover>();
-//            this.userSubscriptionsStorage = new UserSubscriptionsStorage();
-//        }
+        public MenuHandlerTests()
+        {
+            this.botClientMock = new Mock<ITelegramBotClient>();
+            this.userStateMachineMock = new Mock<IUserStateMachine>();
+            this.userSubscriptionsStorage = new UserSubscriptionsStorage();
+        }
 
-//        [Fact]
-//        public async Task HandleMenuAsync_ResetCommand_ResetsUserState()
-//        {
-//            // Arrange
-//            var message = new Message { Text = "/reset", Chat = new Chat { Id = 12345L } };
-//            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+        [Fact]
+        public async Task HandleMenuAsync_ResetCommand_ResetsUserState()
+        {
+            // Arrange
+            var message = new Message { Text = "/reset", Chat = new Chat { Id = 578150968L } };
 
-//            // Act
-//            await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
 
-//            // Assert
-//            this.userStateMachineMock.Verify(x => x.Reset(), Times.Once);
-//        }
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
 
-//        [Fact]
-//        public async Task HandleMenuAsync_ResetCommand_RemovesSubscriptionFromSubscriptionStorage()
-//        {
-//            // Arrange
-//            long chatId = 12345L;
-//            var message = new Message { Text = "/reset", Chat = new Chat { Id = chatId } };
-//            this.userSubscriptionsStorage.Subscriptions.TryAdd(chatId, new Models.SubscriptionInfo(default, default!, default, default));
-//            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+            // Act
+            await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
 
-//            // Act
-//            await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
+            // Assert
+            this.userStateMachineMock.Verify(x => x.Reset(), Times.Once);
+        }
 
-//            // Assert
-//            Assert.Empty(this.userSubscriptionsStorage.Subscriptions);
-//        }
+        [Fact]
+        public async Task HandleMenuAsync_ResetCommand_RemovesSubscriptionFromSubscriptionStorage()
+        {
+            // Arrange
+            long chatId = 578150968L;
+            var message = new Message { Text = "/reset", Chat = new Chat { Id = chatId } };
+            this.userSubscriptionsStorage.Subscriptions.TryAdd(chatId, new Models.SubscriptionInfo(default, default!, default, default));
 
-//        [Fact]
-//        public async Task HandleMenuAsync_ResetCommand_RemovesFileWithHiddenVacancies()
-//        {
-//            // Arrange
-//            var message = new Message { Text = "/reset", Chat = new Chat { Id = 12345L } };
-//            string path = Directory.GetCurrentDirectory() + "\\HiddenVacancies" + $"\\{message.Chat.Id}_hidden.txt";
-//            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
 
-//            // Act
-//            await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
 
-//            // Assert
-//            this.fileRemoverMock.Verify(x => x.RemoveFile(path), Times.Once);
-//        }
+            // Act
+            await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
 
-//        [Fact]
-//        public async Task HandleMenuAsync_ResetCommand_RemovesFileWithSubscription()
-//        {
-//            // Arrange
-//            var message = new Message { Text = "/reset", Chat = new Chat { Id = 12345L } };
-//            string path = Directory.GetCurrentDirectory() + "\\Subscriptions" + $"\\{message.Chat.Id}_subscription.txt";
-//            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+            // Assert
+            Assert.Empty(this.userSubscriptionsStorage.Subscriptions);
+        }
 
-//            // Act
-//            await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
+        [Fact]
+        public async Task HandleMenuAsync_ResetCommand_RemovesHiddenVacancies()
+        {
+            // Arrange
+            long chatId = 578150968L;
+            var message = new Message { Text = "/reset", Chat = new Chat { Id = chatId } };
 
-//            // Assert
-//            this.fileRemoverMock.Verify(x => x.RemoveFile(path), Times.Once);
-//        }
+            using var contextFactory = new TestDbContextFactory();
+            var subscriptionRepo = new SubscriptionDbRepository(contextFactory);
+            var hiddenVacRepo = new HiddenVacancyDbRepository(contextFactory);
 
-//        [Fact]
-//        public async Task HandleMenuAsync_ConfirmCommand_SetsUserStateToPreviousToResultChoosing()
-//        {
-//            // Arrange
-//            var message = new Message { Text = "/confirm", Chat = new Chat { Id = 12345L } };
-//            var userStateMachine = new UserStateMachine(new UserSettings());
-//            userStateMachine.SetState(UserState.OnTypeChoosing);
-//            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subscriptionRepo, hiddenVacRepo);
 
-//            // Act
-//            await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, userStateMachine);
+            // Act
+            await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
 
-//            // Assert
-//            Assert.Equal(UserState.OnTypeChoosing, userStateMachine.State);
-//        }
+            // Assert
+            Assert.Empty(contextFactory.CreateDbContext().HiddenVacancies.Where(x => x.ChatId == chatId));
+        }
 
-//        [Fact]
-//        public async Task HandleMenuAsync_ConfirmCommand_SetsUserStateToPreviousState()
-//        {
-//            // Arrange
-//            var message = new Message { Text = "/confirm", Chat = new Chat { Id = 12345L } };
-//            var userStateMachine = new UserStateMachine(new UserSettings());
-//            userStateMachine.SetState(UserState.OnGreeting);
-//            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+        [Fact]
+        public async Task HandleMenuAsync_ResetCommand_RemovesSubscriptions()
+        {
+            // Arrange
+            long chatId = 578150968L;
+            var message = new Message { Text = "/reset", Chat = new Chat { Id = chatId } };
 
-//            // Act
-//            await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, userStateMachine);
+            using var contextFactory = new TestDbContextFactory();
+            var subscriptionRepo = new SubscriptionDbRepository(contextFactory);
+            var hiddenVacRepo = new HiddenVacancyDbRepository(contextFactory);
 
-//            // Assert
-//            Assert.Equal(UserState.OnStart, userStateMachine.State);
-//        }
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subscriptionRepo, hiddenVacRepo);
 
-//        [Fact]
-//        public async Task HandleMenuAsync_MessegeIsNull_ThrowsArgumentException()
-//        {
-//            // Arrange
-//            Message message = null!;
-//            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+            // Act
+            await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
 
-//            // Act
-//            var result = menuHandler.HandleMenuAsync;
+            // Assert
+            Assert.Empty(contextFactory.CreateDbContext().Subscriptions.Where(x => x.ChatId == chatId));
+        }
 
-//            // Assert
-//            await Assert.ThrowsAnyAsync<ArgumentException>(async () => await result(this.botClientMock.Object, message, this.userStateMachineMock.Object));
-//        }
+        [Fact]
+        public async Task HandleMenuAsync_ConfirmCommand_SetsUserStateToPreviousToResultChoosing()
+        {
+            // Arrange
+            var message = new Message { Text = "/confirm", Chat = new Chat { Id = 578150968L } };
+            var userStateMachine = new UserStateMachine(new UserSettings());
+            userStateMachine.SetState(UserState.OnTypeChoosing);
 
-//        [Theory]
-//        [InlineData(null)]
-//        [InlineData("")]
-//        public async Task HandleMenuAsync_MessegeTextIsNullOrEmpty_ThrowsArgumentException(string messageText)
-//        {
-//            // Arrange
-//            var message = new Message { Text = messageText, Chat = new Chat { Id = 12345L } };
-//            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, this.fileRemoverMock.Object);
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
 
-//            // Act
-//            var result = menuHandler.HandleMenuAsync;
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
 
-//            // Assert
-//            await Assert.ThrowsAnyAsync<ArgumentException>(async () => await result(this.botClientMock.Object, message, this.userStateMachineMock.Object));
-//        }
-//    }
-//}
+            // Act
+            await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, userStateMachine);
+
+            // Assert
+            Assert.Equal(UserState.OnTypeChoosing, userStateMachine.State);
+        }
+
+        [Fact]
+        public async Task HandleMenuAsync_ConfirmCommand_SetsUserStateToPreviousState()
+        {
+            // Arrange
+            var message = new Message { Text = "/confirm", Chat = new Chat { Id = 578150968L } };
+            var userStateMachine = new UserStateMachine(new UserSettings());
+            userStateMachine.SetState(UserState.OnGreeting);
+
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
+
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
+
+            // Act
+            await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, userStateMachine);
+
+            // Assert
+            Assert.Equal(UserState.OnStart, userStateMachine.State);
+        }
+
+        [Fact]
+        public async Task HandleMenuAsync_MessegeIsNull_ThrowsArgumentException()
+        {
+            // Arrange
+            Message message = null!;
+
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
+
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
+
+            // Act
+            var result = menuHandler.HandleMenuAsync;
+
+            // Assert
+            await Assert.ThrowsAnyAsync<ArgumentException>(async () => await result(this.botClientMock.Object, message, this.userStateMachineMock.Object));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task HandleMenuAsync_MessegeTextIsNullOrEmpty_ThrowsArgumentException(string messageText)
+        {
+            // Arrange
+            var message = new Message { Text = messageText, Chat = new Chat { Id = 578150968L } };
+
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
+
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
+
+            // Act
+            var result = menuHandler.HandleMenuAsync;
+
+            // Assert
+            await Assert.ThrowsAnyAsync<ArgumentException>(async () => await result(this.botClientMock.Object, message, this.userStateMachineMock.Object));
+        }
+    }
+}
