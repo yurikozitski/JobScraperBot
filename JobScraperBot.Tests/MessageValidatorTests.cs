@@ -16,6 +16,7 @@ namespace JobScraperBot.Tests
         [InlineData("Віддалено або в офісі", UserState.OnTypeChoosing, true)]
         [InlineData("Налаштувати підписку", UserState.OnResultChoosing, true)]
         [InlineData("через день, 07:38", UserState.OnSubscriptionSetting, true)]
+        [InlineData("random string, 25:38", UserState.OnSubscriptionSetting, false)]
         [InlineData("/reset", UserState.OnSubscriptionSetting, true)]
         [InlineData("/confirm", UserState.OnSubscriptionSetting, true)]
         public void MessageValidator_IsMessageValid_ValidatesMessages(string message, UserState userState, bool expected)

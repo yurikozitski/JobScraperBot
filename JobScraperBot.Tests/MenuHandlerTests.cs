@@ -1,9 +1,11 @@
 ﻿using JobScraperBot.DAL.Interfaces;
 using JobScraperBot.DAL.Repositories;
+using JobScraperBot.Exceptions;
 using JobScraperBot.Services.Implementations;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 using JobScraperBot.Tests.Helpers;
+using Microsoft.Data.SqlClient;
 using Moq;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -177,6 +179,27 @@ namespace JobScraperBot.Tests
 
             // Assert
             await Assert.ThrowsAnyAsync<ArgumentException>(async () => await result(this.botClientMock.Object, message, this.userStateMachineMock.Object));
+        }
+
+        [Fact]
+        public async Task HandleMenuAsync_CantReachDb_ThrowsFailedOperationException()
+        {
+            // Arrange
+            var message = new Message { Text = "/reset", Chat = new Chat { Id = 578150968L } };
+
+            var subRepoMock = new Mock<ISubscriptionRepository>();
+            var hiddenVacRepoMock = new Mock<IHiddenVacancyRepository>();
+
+            subRepoMock.Setup(x => x.DeleteByChatIdAsync(578150968L))
+                .ThrowsAsync(new Exception());
+
+            var menuHandler = new MenuHandler(this.userSubscriptionsStorage, subRepoMock.Object, hiddenVacRepoMock.Object);
+
+            // Act
+            var result = menuHandler.HandleMenuAsync;
+
+            // Assert
+            await Assert.ThrowsAnyAsync<FailedOperationException>(async () => await result(this.botClientMock.Object, message, this.userStateMachineMock.Object));
         }
     }
 }

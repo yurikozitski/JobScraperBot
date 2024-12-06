@@ -14,10 +14,6 @@ namespace JobScraperBot.Models
 
         public DateTime NextUpdate { get; set; }
 
-        public SubscriptionInfo()
-        {
-        }
-
         public SubscriptionInfo(long chatId, UserSettings userSettings, MessageInterval messageInterval, TimeOnly time)
         {
             this.ChatId = chatId;
