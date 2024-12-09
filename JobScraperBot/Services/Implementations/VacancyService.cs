@@ -18,8 +18,8 @@ namespace JobScraperBot.Services.Implementations
         private readonly ILogger<VacancyService> logger;
 
         public VacancyService(
-            IRequestStringService requestStringService,
             IHttpClientFactory httpClientFactory,
+            IRequestStringService requestStringService,
             IHiddenVacancyRepository hiddenVacancyRepository,
             ILogger<VacancyService> logger)
         {
@@ -38,11 +38,6 @@ namespace JobScraperBot.Services.Implementations
             try
             {
                 response = await this.httpClientFactory.CreateClient().GetStringAsync(requestString);
-            }
-            catch (HttpRequestException ex)
-            {
-                //await bot.SendTextMessageAsync(chatId, "Упс...Щось пішло не так.");
-                throw new VacancyLoadException(ex.Message, requestString);
             }
             catch (Exception ex)
             {
@@ -66,7 +61,7 @@ namespace JobScraperBot.Services.Implementations
         {
             if (!vacancies.Any())
             {
-                await bot.SendTextMessageAsync(chatId, "Нажаль не знайшолося вакансій за вашим запитом");
+                await bot.SendMessage(chatId, "Нажаль не знайшолося вакансій за вашим запитом");
                 return;
             }
 
@@ -98,7 +93,7 @@ namespace JobScraperBot.Services.Implementations
 
                 try
                 {
-                    await bot.SendTextMessageAsync(chatId, vacancyView, replyMarkup: new InlineKeyboardMarkup(GetVacancyButton(trimmedLink)));
+                    await bot.SendMessage(chatId, vacancyView, replyMarkup: new InlineKeyboardMarkup(GetVacancyButton(trimmedLink)));
                 }
                 catch (Exception ex)
                 {
@@ -106,7 +101,7 @@ namespace JobScraperBot.Services.Implementations
                 }
             }
 
-            await bot.SendTextMessageAsync(chatId, $"За вашим запитом знайдено вакансій: {vacancies.Count() - hiddenCount}");
+            await bot.SendMessage(chatId, $"За вашим запитом знайдено вакансій: {vacancies.Count() - hiddenCount}");
         }
 
         private static InlineKeyboardButton[][] GetVacancyButton(string vacancyLink)

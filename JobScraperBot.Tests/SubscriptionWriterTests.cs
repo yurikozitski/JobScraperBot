@@ -39,7 +39,7 @@ namespace JobScraperBot.Tests
         }
 
         [Fact]
-        public async Task SubscriptionWriter_ValidData_AddsRecordToDataBase()
+        public async Task WriteSubscriptionAsync_ValidData_AddsRecordToDataBase()
         {
             // Arrange
             long chatId = 998150968L;
@@ -57,7 +57,7 @@ namespace JobScraperBot.Tests
         }
 
         [Fact]
-        public async Task SubscriptionWriter_ValidData_AddsRecordToUserSubscriptionsStorage()
+        public async Task WriteSubscriptionAsync_ValidData_AddsRecordToUserSubscriptionsStorage()
         {
             // Arrange
             long chatId = 998150968L;
@@ -77,7 +77,7 @@ namespace JobScraperBot.Tests
         [Theory]
         [InlineData(null, null)]
         [InlineData("щодня,18:00", null)]
-        public async Task SubscriptionWriter_InValidData_ThrowsArgumentNullException(string sbscrptnText, IUserStateMachine userStateMachine)
+        public async Task WriteSubscriptionAsync_InValidData_ThrowsArgumentNullException(string sbscrptnText, IUserStateMachine userStateMachine)
         {
             // Arrange
             var subscriptionWriter = new SubscriptionWriter(
@@ -93,7 +93,7 @@ namespace JobScraperBot.Tests
         }
 
         [Fact]
-        public async Task SubscriptionWriter_CantReachDb_ThrowsFailedOperationException()
+        public async Task WriteSubscriptionAsync_CantReachDb_ThrowsFailedOperationException()
         {
             // Arrange
             var subRepoMock = new Mock<ISubscriptionRepository>();
