@@ -53,7 +53,8 @@ namespace JobScraperBot.Tests
             await subscriptionWriter.WriteSubscriptionAsync(chatId, "щодня,18:00", this.userStateMachine);
 
             // Assert
-            Assert.NotEmpty(contextFactory.CreateDbContext().Subscriptions.Where(x => x.ChatId == chatId));
+            using var context = contextFactory.CreateDbContext();
+            Assert.NotEmpty(context.Subscriptions.Where(x => x.ChatId == chatId));
         }
 
         [Fact]

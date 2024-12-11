@@ -1,28 +1,15 @@
-﻿using System.Net;
-using System.Text.Json;
-using Azure;
-using Castle.Core.Logging;
+﻿using System.Text.Json;
 using FluentAssertions;
 using JobScraperBot.DAL.Interfaces;
-using JobScraperBot.DAL.Repositories;
 using JobScraperBot.Exceptions;
 using JobScraperBot.Services.Implementations;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
-using JobScraperBot.Tests.Helpers;
 using JobsScraper.BLL.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
-using Moq.Protected;
 using RichardSzalay.MockHttp;
 using Telegram.Bot;
-using Telegram.Bot.Args;
-using Telegram.Bot.Exceptions;
-using Telegram.Bot.Requests.Abstractions;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace JobScraperBot.Tests
 {

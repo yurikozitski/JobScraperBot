@@ -1,7 +1,6 @@
 ﻿using JobScraperBot.Exceptions;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;

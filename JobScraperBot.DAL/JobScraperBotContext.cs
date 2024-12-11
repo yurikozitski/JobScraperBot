@@ -1,7 +1,5 @@
 ﻿using JobScraperBot.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Diagnostics.Metrics;
 
 namespace JobScraperBot.DAL
 {

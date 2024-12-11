@@ -1,7 +1,5 @@
 ﻿using JobScraperBot.Services.Implementations;
-using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
-using JobsScraper.BLL.Enums;
 
 namespace JobScraperBot.Tests
 {

@@ -1,7 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
-using Telegram.Bot.Types;
 
 namespace JobScraperBot.Services.Implementations
 {

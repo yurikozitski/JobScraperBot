@@ -5,7 +5,6 @@ using JobScraperBot.Services.Implementations;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 using JobScraperBot.Tests.Helpers;
-using Microsoft.Data.SqlClient;
 using Moq;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -80,7 +79,8 @@ namespace JobScraperBot.Tests
             await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
 
             // Assert
-            Assert.Empty(contextFactory.CreateDbContext().HiddenVacancies.Where(x => x.ChatId == chatId));
+            using var context = contextFactory.CreateDbContext();
+            Assert.Empty(context.HiddenVacancies.Where(x => x.ChatId == chatId));
         }
 
         [Fact]
@@ -100,7 +100,8 @@ namespace JobScraperBot.Tests
             await menuHandler.HandleMenuAsync(this.botClientMock.Object, message, this.userStateMachineMock.Object);
 
             // Assert
-            Assert.Empty(contextFactory.CreateDbContext().Subscriptions.Where(x => x.ChatId == chatId));
+            using var context = contextFactory.CreateDbContext();
+            Assert.Empty(context.Subscriptions.Where(x => x.ChatId == chatId));
         }
 
         [Fact]

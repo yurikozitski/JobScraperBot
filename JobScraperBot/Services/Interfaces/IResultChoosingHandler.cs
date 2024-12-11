@@ -1,5 +1,4 @@
 ﻿using JobScraperBot.State;
-using Telegram.Bot.Types;
 
 namespace JobScraperBot.Services.Interfaces
 {

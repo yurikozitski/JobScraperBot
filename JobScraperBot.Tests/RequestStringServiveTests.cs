@@ -3,8 +3,6 @@ using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
 using JobsScraper.BLL.Enums;
 using Microsoft.Extensions.Configuration;
-using Moq;
-using Telegram.Bot.Types;
 
 namespace JobScraperBot.Tests
 {

@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
 using JobScraperBot.DAL.Entities;
-using JobScraperBot.DAL.Interfaces;
 using JobScraperBot.Models;
 using JobScraperBot.Services.Interfaces;
 using JobScraperBot.State;
-using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 
 namespace JobScraperBot.Services.Implementations
