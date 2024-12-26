@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Net;
+using System.Runtime.InteropServices;
+using System.Text;
 using JobScraperBot.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,9 +54,33 @@ namespace JobScraperBot
 
             Console.ReadLine();
 
+            //Костиль для деплоя на бесплатному сервісі
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                Thread.Sleep(Timeout.Infinite);
+                string url = "http://localhost:10000/";
+
+                // Create and start the HTTP listener
+                HttpListener listener = new HttpListener();
+                listener.Prefixes.Add(url);
+                listener.Start();
+                Console.WriteLine($"Listening for connections on {url}");
+
+                while (true)
+                {
+                    // Wait for an incoming request
+                    HttpListenerContext context = await listener.GetContextAsync();
+                    HttpListenerRequest request = context.Request;
+                    HttpListenerResponse response = context.Response;
+
+                    // Create the response
+                    string responseString = "<html><body>Hello, World!</body></html>";
+                    byte[] buffer = Encoding.UTF8.GetBytes(responseString);
+
+                    response.ContentLength64 = buffer.Length;
+                    System.IO.Stream output = response.OutputStream;
+                    await output.WriteAsync(buffer, 0, buffer.Length);
+                    output.Close();
+                }
             }
 
             await cts.CancelAsync();
