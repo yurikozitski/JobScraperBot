@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "JobScraperBot": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

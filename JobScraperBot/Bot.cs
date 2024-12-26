@@ -1,4 +1,5 @@
-﻿using JobScraperBot.Services.Interfaces;
+﻿using System.Runtime.InteropServices;
+using JobScraperBot.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
@@ -50,6 +51,12 @@ namespace JobScraperBot
             Console.WriteLine($"@{me?.Username ?? "jobgatherer_bot"} is running... Press Enter to terminate");
 
             Console.ReadLine();
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Thread.Sleep(Timeout.Infinite);
+            }
+
             await cts.CancelAsync();
         }
     }
